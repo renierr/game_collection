@@ -13,17 +13,18 @@ import '../helpers/debug_log.dart';
 /// without PulseAudio — must leave the game fully playable and silent rather
 /// than throwing on the first brick.
 ///
-/// SoLoud has a fixed voice budget (16) and *silently* drops a `play()` once it
-/// is full — it reports `maxActiveVoiceCountReached` and returns a handle that
-/// addresses no voice, without throwing. Worse, the refusal is not even-handed:
-/// a clip that already has a voice playing steals its own oldest one and is
+/// SoLoud defaults to 16 concurrent voices and *silently* drops a `play()` once
+/// they are gone — it reports `maxActiveVoiceCountReached` and returns a handle
+/// that addresses no voice, without throwing. The refusal is not even-handed
+/// either: a clip that already has a voice steals its own oldest one and is
 /// always heard, while a clip with none is simply refused. A game that fires a
 /// tick per collision therefore loses precisely the rare sounds that carry
 /// information — the launch, the level clear — while the ticks play on.
 ///
-/// [play] answers that from both ends: it rations the ambient clips by rate
-/// ([minGapMs] and a rolling window) *and* by voice count, and when an
-/// [important] clip is refused anyway it ends the ticks and asks again.
+/// [_voiceCeiling] raises that budget far past anything a board can ask for,
+/// which is the actual cure. The rationing in [play] stays for its own sake —
+/// forty identical ticks in one frame is one sound to the ear and a pile of
+/// wasted mixing — and the eviction path is kept as a backstop.
 class GameAudio {
   GameAudio._();
 
@@ -34,7 +35,11 @@ class GameAudio {
   /// finds room without having to evict anything.
   static const int _ambientBudget = 5;
   static const int _windowMs = 120;
-  static const int _ambientVoiceCap = 4;
+  static const int _ambientVoiceCap = 8;
+
+  /// Concurrent voices asked of SoLoud, well above what any board generates.
+  /// The engine's own hard maximum is 1023.
+  static const int _voiceCeiling = 64;
 
   final Map<String, AudioSource> _clips = {};
 
@@ -44,6 +49,7 @@ class GameAudio {
   final Map<String, int> _lastPlayMs = {};
   final List<int> _recentAmbient = [];
   final List<SoundHandle> _ambientVoices = [];
+  int _lastRefusalLogMs = 0;
   Future<void>? _initFuture;
   bool _available = false;
   double _masterVolume = 0.7;
@@ -59,6 +65,11 @@ class GameAudio {
   Future<void> _init() async {
     try {
       if (!SoLoud.instance.isInitialized) await SoLoud.instance.init();
+      // The default 16 is nowhere near a board that can land a dozen impacts in
+      // one frame, and overflowing it drops sounds silently. Above the ceiling
+      // SoLoud keeps the loudest voices rather than refusing new ones, so the
+      // failure mode past this is graceful instead of arbitrary.
+      SoLoud.instance.setMaxActiveVoiceCount(_voiceCeiling);
       _available = true;
     } catch (e) {
       errorLog('[GameAudio] Audio unavailable, running silent: $e');
@@ -91,6 +102,14 @@ class GameAudio {
   Future<void> registerAll(Map<String, Uint8List> clips) async {
     for (final entry in clips.entries) {
       await register(entry.key, entry.value);
+    }
+    // Re-assert the ceiling per game: an engine that reinitialized underneath
+    // us — an audio device change, an interruption — comes back at SoLoud's
+    // default of 16.
+    if (_available) {
+      try {
+        SoLoud.instance.setMaxActiveVoiceCount(_voiceCeiling);
+      } catch (_) {}
     }
   }
 
@@ -126,11 +145,7 @@ class GameAudio {
       // Refused for want of a voice. The ticks are the cheapest thing playing
       // and none of them is missed, so end them and ask once more.
       _stopAmbientVoices();
-      if (_startVoice(source, key, volume) == null) {
-        // Only reachable when the budget is full of sounds this class did not
-        // start, which nothing in the app currently does.
-        debugLog('[GameAudio] no voice for "$key" even after freeing ticks');
-      }
+      if (_startVoice(source, key, volume) == null) _reportRefusal(key, now);
       return;
     }
 
@@ -160,6 +175,22 @@ class GameAudio {
       debugLog('[GameAudio] play("$key") failed: $e');
       return null;
     }
+  }
+
+  /// A refused [important] clip is the one audio fault a player actually
+  /// notices, and it leaves no trace of its own — so say so, with the numbers
+  /// that identify the cause, at most once a second.
+  void _reportRefusal(String key, int now) {
+    if (now - _lastRefusalLogMs < 1000) return;
+    _lastRefusalLogMs = now;
+    var active = -1;
+    try {
+      active = SoLoud.instance.getActiveVoiceCount();
+    } catch (_) {}
+    errorLog(
+      '[GameAudio] no voice for "$key" '
+      '(active $active of $_voiceCeiling, ambient ${_ambientVoices.length})',
+    );
   }
 
   void _pruneAmbientVoices() {
