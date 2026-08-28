@@ -36,11 +36,18 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android build artifacts
+# Android build artifacts and signing
 /android/app/debug
 /android/app/profile
 /android/app/release
 /android/build/
+**/android/key.properties
+**/android/*.jks
+**/android/*.keystore
+key.properties
+*.jks
+*.keystore
+
 
 # AI Agent temp files
 .agents/temp/

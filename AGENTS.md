@@ -19,6 +19,7 @@ Linux.
 - **Caveman style**: Short, direct answers. No filler.
 - Do not run production compilation or release builds unless explicitly
   requested.
+- Do not run tests (`flutter test`) unless explicitly requested.
 - **Git Write Consent**: Never run git write operations (`git add`,
   `git commit`, `git push`) without fresh explicit approval. A direct "commit"
   request authorises staging and creating one commit for the current work only;
@@ -352,6 +353,6 @@ are unnecessary for markdown, images or static assets.*
 
 1. **Formatting**: `dart format ./lib ./test`
 2. **Analysis**: `flutter analyze`
-3. **Tests**: `flutter test`
+*(Do not run `flutter test` unless explicitly requested).*
 
 `./build.sh help` lists the release build and packaging targets.
