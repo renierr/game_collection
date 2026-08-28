@@ -1,0 +1,227 @@
+{
+  "@@locale": "de",
+
+  "commonCancel": "Abbrechen",
+  "commonConfirm": "Bestätigen",
+  "commonClose": "Schließen",
+  "commonBack": "Zurück",
+  "commonClear": "Löschen",
+  "commonReset": "Zurücksetzen",
+  "commonSettings": "Einstellungen",
+
+  "overviewSearchHint": "Spiele suchen",
+  "overviewNoGamesFound": "Keine Spiele gefunden",
+  "overviewAddFavorite": "Zu Favoriten hinzufügen",
+  "overviewRemoveFavorite": "Aus Favoriten entfernen",
+
+  "sectionTitleArcade": "Arcade",
+  "sectionTitlePuzzle": "Puzzle",
+
+  "settingsDialogTitle": "Einstellungen",
+  "settingsDialogAppearanceSubtitle": "Design, Sprache, Layout",
+  "settingsDialogGameplaySubtitle": "Ton, Bildschirm, gespeicherte Daten",
+  "settingsDialogAboutSubtitle": "Version und Lizenzen",
+
+  "appearanceTitle": "Darstellung",
+  "settingsTheme": "Design",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Hell",
+  "settingsThemeDark": "Dunkel",
+  "settingsLanguage": "Sprache",
+  "settingsLanguageSystem": "System",
+  "settingsLanguageEnglish": "Englisch",
+  "settingsLanguageGerman": "Deutsch",
+  "settingsCompactView": "Kompakte Ansicht",
+  "settingsCompactViewSubtitle": "Kleinere Karten, mehr Spiele pro Zeile",
+  "settingsSortBy": "Sortieren nach",
+  "settingsSortRecent": "Zuletzt gespielt",
+  "settingsSortDefaultOrder": "Standardreihenfolge",
+  "settingsSortName": "Name",
+
+  "gameplayTitle": "Spielverhalten",
+  "settingsSound": "Soundeffekte",
+  "settingsSoundSubtitle": "Soundeffekte im Spiel abspielen",
+  "settingsVolume": "Lautstärke",
+  "settingsKeepScreenAwake": "Bildschirm anlassen",
+  "settingsKeepScreenAwakeSubtitle": "Bildschirm anlassen, solange ein Zug läuft",
+  "settingsHaptics": "Haptisches Feedback",
+  "settingsHapticsSubtitle": "Bei Treffern und Levelwechseln vibrieren",
+  "settingsResetData": "Alle Spieldaten zurücksetzen",
+  "settingsResetDataSubtitle": "Löscht jeden Spielstand, Highscore und jede Einstellung",
+  "settingsResetDataConfirm": "Dies löscht dauerhaft jeden gespeicherten Durchlauf, alle Highscores und Einstellungen. Das lässt sich nicht rückgängig machen.",
+  "settingsResetDataDone": "Alle Spieldaten wurden zurückgesetzt",
+
+  "aboutTitle": "Über",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutDescription": "Eine Sammlung von Gelegenheitsspielen für Android, Windows und Linux. Jedes Spiel läuft vollständig offline — ohne Konto, ohne Werbung, ohne Tracking.",
+  "aboutGamesInstalled": "{count, plural, =1{1 Spiel installiert} other{{count} Spiele installiert}}",
+  "@aboutGamesInstalled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutLicense": "Lizenz",
+  "aboutThirdPartyLicenses": "Lizenzen von Drittanbietern",
+
+  "gameNameRicochet": "Ricochet",
+  "gameDescriptionRicochet": "Ziele mit einer Salve springender Bälle und zerlege nummerierte Steine über endlos generierte Level.",
+
+  "ricochetScore": "Punkte",
+  "ricochetBest": "Rekord",
+  "ricochetLevel": "Level",
+  "ricochetBalls": "Bälle",
+  "ricochetPowerMenu": "Power-ups",
+  "ricochetRestartLevel": "Level neu starten",
+  "ricochetHowToPlay": "Spielanleitung",
+  "ricochetMute": "Stumm schalten",
+  "ricochetUnmute": "Ton einschalten",
+  "ricochetRecall": "Zurückrufen",
+  "ricochetSpeed": "Tempo",
+  "ricochetSpeedActive": "Tempo ×{multiplier}",
+  "@ricochetSpeedActive": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      }
+    }
+  },
+
+  "ricochetGameOver": "SPIEL VORBEI",
+  "ricochetNewBest": "Neuer Rekord!",
+  "ricochetBestScore": "Rekord: {best}",
+  "@ricochetBestScore": {
+    "placeholders": {
+      "best": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetReachedLevel": "Level {level} erreicht",
+  "@ricochetReachedLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetRetryLevel": "Level wiederholen",
+  "ricochetStartOver": "Neu beginnen",
+
+  "ricochetPowerBalls": "+10 Bälle",
+  "ricochetPowerBallsDesc": "Fügt deinem Vorrat 10 Bälle hinzu",
+  "ricochetPowerPierce": "Durchschlag-Salve",
+  "ricochetPowerPierceDesc": "Ein Ball bohrt sich geradewegs durch Steine",
+  "ricochetPowerBomb": "Bomben-Salve",
+  "ricochetPowerBombDesc": "Ein Ball explodiert bei jedem Treffer",
+  "ricochetPowerClearRow": "Reihe räumen",
+  "ricochetPowerClearRowDesc": "Löscht die unterste Steinreihe",
+
+  "ricochetToastPierceArmed": "DURCHSCHLAG BEREIT",
+  "ricochetToastBombArmed": "BOMBE BEREIT",
+  "ricochetToastRecalled": "ZURÜCKGERUFEN",
+  "ricochetToastRowCleared": "REIHE GERÄUMT",
+  "ricochetToastPlusOneBall": "+1 BALL",
+  "ricochetHintDragToAim": "Zum Zielen ziehen",
+  "ricochetChipPierce": "DURCHSCHLAG",
+  "ricochetChipBomb": "BOMBE",
+  "ricochetToastPlusBalls": "+{count} BÄLLE",
+  "@ricochetToastPlusBalls": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetToastSpeed": "TEMPO ×{multiplier}",
+  "@ricochetToastSpeed": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetToastAutoSpeed": "AUTO-TEMPO ×{multiplier}",
+  "@ricochetToastAutoSpeed": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetBannerLevel": "LEVEL {level}",
+  "@ricochetBannerLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetPopupDoubled": "+{points} x2!",
+  "@ricochetPopupDoubled": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+
+  "ricochetHelpTitle": "Ricochet spielen",
+  "ricochetHelpBasicsTitle": "Grundlagen",
+  "ricochetHelpBasicsAim": "Ziehe irgendwo auf dem Spielfeld, um zu zielen — eine gestrichelte Vorschau zeigt die Flugbahn und den ersten Aufprall.",
+  "ricochetHelpBasicsFire": "Loslassen zum Feuern. Pro Zug starten bis zu 100 Bälle nacheinander und prallen von Wänden und Steinen ab.",
+  "ricochetHelpBasicsHp": "Jeder Stein zeigt seine Trefferpunkte; jeder Treffer zieht 1 ab. Bei 0 zerspringt er und bringt Punkte.",
+  "ricochetHelpBasicsDrop": "Nach jeder Salve rückt das Feld eine Reihe nach unten. Überquert ein Stein die rote Gefahrenlinie, endet der Durchlauf.",
+  "ricochetHelpBasicsClear": "Räume das ganze Feld, um das Level abzuschließen: Punktebonus, +2 Bälle und ein frisch generiertes nächstes Feld.",
+  "ricochetHelpBasicsPickup": "Grüne (+)-Aufsammler werden bei Berührung eingesammelt und geben dauerhaft einen Ball extra.",
+  "ricochetHelpBasicsCharges": "Gebunkerte Durchschlag- und Bombenladungen erscheinen als Chips direkt über dem Abschuss — sie bleiben an ihrem Platz, wohin er auch rutscht. Ladungen stapeln sich: bunkere mehrere, und mehrere Bälle deiner nächsten Salve erben den Effekt.",
+
+  "ricochetHelpTilesTitle": "Steinübersicht",
+  "ricochetHelpTilesIntro": "Bis auf den (+)-Aufsammler hat jeder Stein Trefferpunkte und zerbricht wie ein normaler Stein. Der Effekt ist das, was zusätzlich passiert.",
+
+  "ricochetTileBrick": "Stein",
+  "ricochetTileBrickEffect": "Normales Ziel. Punkte = max. TP × 10 + Level × 2. Die Farbe zeigt, wie zäh er ist.",
+  "ricochetTileBomb": "Bombe",
+  "ricochetTileBombEffect": "Geht bei einem einzigen Treffer hoch, egal wie viele Trefferpunkte sie hat: alles im Umkreis von rund zwei Feldern nimmt tödlichen Schaden. Kettet über andere Bomben weiter.",
+  "ricochetTileGift": "Geschenk (?)",
+  "ricochetTileGiftEffect": "Löst beim Zerstören ein zufälliges Power-up aus: +10 Bälle, eine Durchschlag-Ladung, eine Bomben-Ladung oder Reihe räumen.",
+  "ricochetTileMult": "×2-Multiplikator",
+  "ricochetTileMultEffect": "Zahlt beim Zerstören doppelte Punkte, mit eigener Anzeige.",
+  "ricochetTilePierce": "Durchschlag",
+  "ricochetTilePierceEffect": "Bunkert eine Durchschlag-Ladung. Ein Ball deiner nächsten Salve bohrt sich geradewegs durch die Steine, statt abzuprallen, und beschädigt jeden Stein auf seinem Weg einmal.",
+  "ricochetTileBlast": "Sprengsatz",
+  "ricochetTileBlastEffect": "Bunkert eine Bomben-Ladung. Ein Ball deiner nächsten Salve explodiert bei jedem Aufprall für bis zu 50 Schaden im Umkreis.",
+  "ricochetTileRamp": "Rampe",
+  "ricochetTileRampEffect": "Ein massives Dreieck, das eine Hälfte seines Feldes füllt. Die 45°-Schräge lenkt den Ball um eine Vierteldrehung ab; die beiden geraden Seiten prallen wie ein gewöhnlicher Stein, und die leere Hälfte des Feldes ist Luft, durch die der Ball glatt hindurchfliegt.",
+  "ricochetTileOrb": "Kugel",
+  "ricochetTileOrbEffect": "Ein runder Prallkörper: er reflektiert an seiner gewölbten Oberfläche statt an einer flachen Fläche, sodass die Ausfallwinkel vom Treffpunkt aus auffächern. Da er rund ist, sind die Ecken seines Feldes leere Luft.",
+  "ricochetTilePickup": "(+)-Aufsammler",
+  "ricochetTilePickupEffect": "Kein Stein — keine Trefferpunkte, nicht wegschießbar. Wird bei Berührung eingesammelt und gibt dauerhaft +1 Ball.",
+
+  "ricochetHelpDeflectorsTitle": "Was einen Ball ablenkt",
+  "ricochetHelpDeflectorsIntro": "Rampen und Kugeln sind die einzigen Steine, die die Richtung eines Balls über ein flaches Abprallen hinaus verändern. Beide haben eine kurze Abklingzeit pro Ball, sodass ein Ball in einer Ansammlung davon nicht hängen bleiben kann.",
+  "ricochetHelpRampA": "Eine „/“-Rampe lenkt einen fallenden Ball nach links.",
+  "ricochetHelpRampB": "Eine „\\“-Rampe lenkt denselben Ball in die andere Richtung.",
+  "ricochetHelpOrbDemo": "Eine Kugel fächert den Ball vom Treffpunkt aus auf.",
+
+  "ricochetHelpControlsTitle": "Steuerung",
+  "ricochetHelpControlsDrag": "Ziehen und loslassen — zielen und feuern.",
+  "ricochetHelpControlsRecall": "Zurückrufen — holt sofort alle Bälle zurück, damit ein feststeckender Schuss dich nie blockiert.",
+  "ricochetHelpControlsSpeed": "Tempo — jeder Druck legt einen weiteren Schub drauf, bis ×10, bis der Zug endet. Ab sechs Sekunden Salve springt es von allein auf ×3.",
+  "ricochetHelpControlsMenu": "Power-ups — öffnet das Menü mit unbegrenzt nutzbaren Ladungen.",
+  "ricochetHelpControlsRestart": "Neu starten — spielt das aktuelle Level von vorn.",
+
+  "ricochetHelpLevelsTitle": "Leveldesign",
+  "ricochetHelpLevelsText": "Jedes Feld wird aus einer von neunzehn handgezeichneten Schablonen geschnitten, automatisch auf dem 13-Spalten-Raster zentriert und zufällig gespiegelt. Über der Gefahrenlinie ist eine freie Zone garantiert, damit jeder Stein erreichbar bleibt. Hohe Kompositionen können über dem oberen Rand beginnen und pro Zug eine Reihe einfahren. Ab Level 8 stapeln sich meist zwei Schablonen zu einer größeren Komposition. Die Trefferpunkte steigen endlos mit dem Level, und die exotischen Steine schalten sich nach und nach frei: Sprengsatz ab Level 3, Durchschlag ab 5, Kugeln ab 7, Rampen ab 10.",
+
+  "ricochetHelpProgressTitle": "Fortschritt",
+  "ricochetHelpProgressText": "Level, Punkte, Ballanzahl und das aktuelle Feld werden automatisch gespeichert — brich mitten im Level ab und mach später dort weiter. Dein Rekord bleibt über alle Durchläufe erhalten. Bei Spielende kannst du das Level wiederholen, exakt so wiederhergestellt, wie es zu Levelbeginn aussah, oder von Level 1 neu beginnen."
+}

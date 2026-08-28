@@ -1,0 +1,47 @@
+name: game_collection
+description: "A collection of casual games for Android, Windows and Linux."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  cupertino_icons: ^1.0.8
+
+  provider: ^6.1.2
+  go_router: ^17.3.0
+  sqflite: ^2.4.3
+  sqflite_common_ffi: ^2.4.2
+  path: ^1.9.0
+  path_provider: ^2.1.3
+  flutter_soloud: ^4.0.6
+  package_info_plus: ^10.1.0
+  wakelock_plus: ^1.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/logo/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  windows:
+    generate: true
+    image_path: "assets/logo/logo.png"
+  image_path: "assets/logo/logo.png"
+  adaptive_icon_background: "#10121C"
+  adaptive_icon_foreground: "assets/logo/logo.png"

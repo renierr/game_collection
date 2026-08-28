@@ -1,0 +1,227 @@
+{
+  "@@locale": "en",
+
+  "commonCancel": "Cancel",
+  "commonConfirm": "Confirm",
+  "commonClose": "Close",
+  "commonBack": "Back",
+  "commonClear": "Clear",
+  "commonReset": "Reset",
+  "commonSettings": "Settings",
+
+  "overviewSearchHint": "Search games",
+  "overviewNoGamesFound": "No games found",
+  "overviewAddFavorite": "Add to favorites",
+  "overviewRemoveFavorite": "Remove from favorites",
+
+  "sectionTitleArcade": "Arcade",
+  "sectionTitlePuzzle": "Puzzle",
+
+  "settingsDialogTitle": "Settings",
+  "settingsDialogAppearanceSubtitle": "Theme, language, layout",
+  "settingsDialogGameplaySubtitle": "Sound, screen, saved data",
+  "settingsDialogAboutSubtitle": "Version and licenses",
+
+  "appearanceTitle": "Appearance",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageGerman": "German",
+  "settingsCompactView": "Compact view",
+  "settingsCompactViewSubtitle": "Smaller cards, more games per row",
+  "settingsSortBy": "Sort by",
+  "settingsSortRecent": "Recently played",
+  "settingsSortDefaultOrder": "Default order",
+  "settingsSortName": "Name",
+
+  "gameplayTitle": "Gameplay",
+  "settingsSound": "Sound effects",
+  "settingsSoundSubtitle": "Play the in-game sound effects",
+  "settingsVolume": "Volume",
+  "settingsKeepScreenAwake": "Keep screen awake",
+  "settingsKeepScreenAwakeSubtitle": "Hold the screen on while a turn plays out",
+  "settingsHaptics": "Haptic feedback",
+  "settingsHapticsSubtitle": "Vibrate on impacts and level changes",
+  "settingsResetData": "Reset all game data",
+  "settingsResetDataSubtitle": "Deletes every save, high score and preference",
+  "settingsResetDataConfirm": "This permanently deletes every saved run, high score and preference. It cannot be undone.",
+  "settingsResetDataDone": "All game data has been reset",
+
+  "aboutTitle": "About",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutDescription": "A collection of casual games for Android, Windows and Linux. Every game runs fully offline — no accounts, no ads, no tracking.",
+  "aboutGamesInstalled": "{count, plural, =1{1 game installed} other{{count} games installed}}",
+  "@aboutGamesInstalled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutLicense": "License",
+  "aboutThirdPartyLicenses": "Third-party licenses",
+
+  "gameNameRicochet": "Ricochet",
+  "gameDescriptionRicochet": "Aim a volley of bouncing balls and crush numbered bricks across endless self-generating levels.",
+
+  "ricochetScore": "Score",
+  "ricochetBest": "Best",
+  "ricochetLevel": "Level",
+  "ricochetBalls": "Balls",
+  "ricochetPowerMenu": "Power-ups",
+  "ricochetRestartLevel": "Replay this level",
+  "ricochetHowToPlay": "How to play",
+  "ricochetMute": "Mute",
+  "ricochetUnmute": "Unmute",
+  "ricochetRecall": "Recall",
+  "ricochetSpeed": "Speed",
+  "ricochetSpeedActive": "Speed ×{multiplier}",
+  "@ricochetSpeedActive": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      }
+    }
+  },
+
+  "ricochetGameOver": "GAME OVER",
+  "ricochetNewBest": "New best score!",
+  "ricochetBestScore": "Best: {best}",
+  "@ricochetBestScore": {
+    "placeholders": {
+      "best": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetReachedLevel": "Reached level {level}",
+  "@ricochetReachedLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetRetryLevel": "Retry level",
+  "ricochetStartOver": "Start over",
+
+  "ricochetPowerBalls": "+10 Balls",
+  "ricochetPowerBallsDesc": "Adds 10 balls to your stash",
+  "ricochetPowerPierce": "Pierce volley",
+  "ricochetPowerPierceDesc": "One ball drills straight through bricks",
+  "ricochetPowerBomb": "Bomb volley",
+  "ricochetPowerBombDesc": "One ball explodes on every impact",
+  "ricochetPowerClearRow": "Clear row",
+  "ricochetPowerClearRowDesc": "Wipes the lowest brick row",
+
+  "ricochetToastPierceArmed": "PIERCE ARMED",
+  "ricochetToastBombArmed": "BOMB ARMED",
+  "ricochetToastRecalled": "RECALLED",
+  "ricochetToastRowCleared": "ROW CLEARED",
+  "ricochetToastPlusOneBall": "+1 BALL",
+  "ricochetHintDragToAim": "Drag anywhere to aim",
+  "ricochetChipPierce": "PIERCE",
+  "ricochetChipBomb": "BOMB",
+  "ricochetToastPlusBalls": "+{count} BALLS",
+  "@ricochetToastPlusBalls": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetToastSpeed": "SPEED ×{multiplier}",
+  "@ricochetToastSpeed": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetToastAutoSpeed": "AUTO SPEED ×{multiplier}",
+  "@ricochetToastAutoSpeed": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetBannerLevel": "LEVEL {level}",
+  "@ricochetBannerLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "ricochetPopupDoubled": "+{points} x2!",
+  "@ricochetPopupDoubled": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+
+  "ricochetHelpTitle": "How to play Ricochet",
+  "ricochetHelpBasicsTitle": "The basics",
+  "ricochetHelpBasicsAim": "Drag anywhere on the board to aim — a dashed preview shows the trajectory and the first impact.",
+  "ricochetHelpBasicsFire": "Release to fire. Up to 100 balls launch per turn, staggered, ricocheting off walls and bricks.",
+  "ricochetHelpBasicsHp": "Every brick shows its HP; each hit removes 1. At 0 it shatters for points.",
+  "ricochetHelpBasicsDrop": "After every volley the board drops one row. If any brick crosses the red danger line, the run ends.",
+  "ricochetHelpBasicsClear": "Clear the whole board to complete the level: a score bonus, +2 balls, and a freshly generated next board.",
+  "ricochetHelpBasicsPickup": "Green (+) pickups are collected on touch and permanently add a ball.",
+  "ricochetHelpBasicsCharges": "Banked pierce and bomb charges show as chips just above the launcher — they stay put wherever it slides to. Charges stack: bank several and several balls of your next volley inherit the effect.",
+
+  "ricochetHelpTilesTitle": "Tile reference",
+  "ricochetHelpTilesIntro": "Except the (+) pickup, every tile carries HP and breaks like a normal brick. The effect is what happens in addition.",
+
+  "ricochetTileBrick": "Brick",
+  "ricochetTileBrickEffect": "Plain target. Points = max HP × 10 + level × 2. The colour tracks how tough it is.",
+  "ricochetTileBomb": "Bomb",
+  "ricochetTileBombEffect": "Dies to a single hit regardless of HP and explodes: everything within about two cells takes lethal damage. Chains through other bombs.",
+  "ricochetTileGift": "Gift (?)",
+  "ricochetTileGiftEffect": "On destruction fires one random power-up: +10 balls, a pierce charge, a bomb charge or clear row.",
+  "ricochetTileMult": "×2 multiplier",
+  "ricochetTileMultEffect": "Pays double points when destroyed, with its own popup.",
+  "ricochetTilePierce": "Pierce",
+  "ricochetTilePierceEffect": "Banks a pierce charge. One ball of your next volley drills straight through bricks instead of bouncing, damaging each brick it passes once.",
+  "ricochetTileBlast": "Blast",
+  "ricochetTileBlastEffect": "Banks a bomb charge. One ball of your next volley explodes on every impact for up to 50 damage in a radius.",
+  "ricochetTileRamp": "Ramp",
+  "ricochetTileRampEffect": "A solid triangle filling half its cell. The 45° slope deflects the ball a quarter turn; the two flat legs bounce like an ordinary tile, and the empty half of the cell is air the ball passes straight through.",
+  "ricochetTileOrb": "Orb",
+  "ricochetTileOrbEffect": "A round bumper: reflects off its curved surface instead of a flat face, so outgoing angles fan out from where it was struck. Being round, the corners of its cell are empty air.",
+  "ricochetTilePickup": "(+) pickup",
+  "ricochetTilePickupEffect": "Not a brick — no HP, cannot be shot away. Collected on touch for a permanent +1 ball.",
+
+  "ricochetHelpDeflectorsTitle": "What bends a ball",
+  "ricochetHelpDeflectorsIntro": "Ramps and orbs are the only tiles that change a ball's direction beyond a flat bounce. Both have a short per-ball cooldown, so a ball cannot get stuck rattling inside a cluster of them.",
+  "ricochetHelpRampA": "A ‘/’ ramp turns a falling ball to the left.",
+  "ricochetHelpRampB": "A ‘\\’ ramp turns the same ball the other way.",
+  "ricochetHelpOrbDemo": "An orb fans the ball out from wherever it was struck.",
+
+  "ricochetHelpControlsTitle": "Controls",
+  "ricochetHelpControlsDrag": "Drag and release — aim and fire.",
+  "ricochetHelpControlsRecall": "Recall — instantly pulls all balls back, so a stuck shot can never trap you.",
+  "ricochetHelpControlsSpeed": "Speed — each press stacks another boost, up to ×10, until the turn ends. It kicks in on its own at ×3 if a volley drags past six seconds.",
+  "ricochetHelpControlsMenu": "Power-ups — open the menu for unlimited-use charges.",
+  "ricochetHelpControlsRestart": "Replay — restarts the current level from its start.",
+
+  "ricochetHelpLevelsTitle": "Level design",
+  "ricochetHelpLevelsText": "Every board is cut from one of nineteen hand-drawn stencils, auto-centred on the 13-column grid and randomly mirrored. A clear zone above the danger line is guaranteed, so every tile is reachable. Tall compositions may start above the top edge and slide into view one row per turn. From level 8 two stencils usually stack into one bigger composition. Brick HP scales forever with the level, and the exotic tiles unlock as you climb: blast at level 3, pierce at 5, orbs at 7, ramps at 10.",
+
+  "ricochetHelpProgressTitle": "Progress",
+  "ricochetHelpProgressText": "Level, score, ball count and the current board are saved automatically — leave mid-level and resume where you left off. Your best score persists across runs. On game over you can retry the level, restored exactly as it looked when the level began, or start over from level 1."
+}
