@@ -1,7 +1,7 @@
 name: game_collection
 description: "A collection of casual games for Android, Windows and Linux."
 publish_to: "none"
-version: 0.1.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.12.1
