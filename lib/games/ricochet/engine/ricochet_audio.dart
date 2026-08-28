@@ -35,16 +35,16 @@ class RicochetSfx {
     return <String, Uint8List>{
       for (var i = 0; i < hitVariants; i++)
         '$hitPrefix$i': WavBuilder.mix([
-          // An impact is a transient, not a note: a bright click of noise for
-          // the contact, and a pitched body under it that falls away at once.
-          // The original's bare square wave read as a beep because it had the
-          // body and none of the click.
+          // A soft knock, not a click: the noise sits low and quiet so it reads
+          // as contact rather than a hiss, and the pitched body carries the
+          // level. Band-passing noise up around 1-3kHz puts it where the ear is
+          // most sensitive, which is what made this sting.
           WavBuilder.noise(
             seconds: 0.03,
-            gain: 0.18,
-            decay: 14,
-            highPassHz: 800,
-            lowPassHz: 3000,
+            gain: 0.09,
+            decay: 16,
+            highPassHz: 200,
+            lowPassHz: 1500,
             seed: 0x51 + i,
           ),
           WavBuilder.tone(
@@ -52,10 +52,13 @@ class RicochetSfx {
             // same range in even steps.
             frequency: 300 + 120 * i / (hitVariants - 1),
             seconds: 0.045,
-            waveform: Waveform.triangle,
-            gain: 0.40,
-            slideHz: -170,
-            decay: 13,
+            // Sine, not triangle: no odd harmonics to buzz. The short attack
+            // stops the wave starting mid-cycle, which is its own click.
+            waveform: Waveform.sine,
+            gain: 0.48,
+            slideHz: -150,
+            decay: 12,
+            attackSeconds: 0.003,
           ),
         ]),
       breakTile: WavBuilder.mix([
