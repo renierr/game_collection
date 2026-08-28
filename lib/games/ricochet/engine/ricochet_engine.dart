@@ -845,6 +845,7 @@ class RicochetEngine {
     for (final pickup in pickups) {
       pickup.y += Board.cell;
     }
+    pickups.removeWhere((p) => p.y > Board.dangerY);
     shiftProgress = 0;
 
     if (bricks.any((b) => b.y + b.height > Board.dangerY)) {
@@ -852,7 +853,7 @@ class RicochetEngine {
       return;
     }
 
-    if (bricks.isEmpty && pickups.isEmpty) {
+    if (bricks.isEmpty) {
       final bonus = 100 * level;
       score += bonus;
       _recordBest();

@@ -107,10 +107,11 @@ class RicochetBoardPainter extends CustomPainter {
   }
 
   void _paintPickups(Canvas canvas) {
+    final offset = engine.rowShiftOffset;
     for (final pickup in engine.pickups) {
       TilePainter.paintPickup(
         canvas,
-        Offset(pickup.x, pickup.y),
+        Offset(pickup.x, pickup.y + offset),
         pickup.radius,
         engine.timeSeconds * 5 + pickup.seed,
       );

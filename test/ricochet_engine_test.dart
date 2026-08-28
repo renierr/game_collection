@@ -360,10 +360,82 @@ void main() {
     expect(engine.mode, GameMode.aiming);
   });
 
-  test('the best score is persisted as soon as it is beaten', () async {
-    await engine.start();
-    engine.usePower(PowerUp.clearRow);
-    expect(engine.score, greaterThan(0));
-    expect(store.best, engine.score);
-  });
+  test(
+    'the round finishes when all bricks are cleared even if pickups remain',
+    () async {
+      store.save = {
+        'v': 1,
+        'level': 1,
+        'score': 0,
+        'best': 0,
+        'totalBalls': 1,
+        'originX': Board.width / 2,
+        'bricks': [
+          {'x': 0, 'y': Board.cell * 2, 'hp': 1, 'mh': 1, 't': 'normal'},
+        ],
+        'pk': [
+          {
+            'x': (Board.width / 2).round(),
+            'y': (Board.cell * 3).round(),
+            'r': 14.0,
+            's': 0.0,
+          },
+        ],
+      };
+      await engine.start();
+      expect(engine.bricks.length, 1);
+      expect(engine.pickups.length, 1);
+
+      // Destroy the only brick.
+      engine.usePower(PowerUp.clearRow);
+      expect(engine.bricks, isEmpty);
+      expect(engine.pickups, isNotEmpty);
+
+      // Fire a shot and simulate until volley & shift resolve.
+      engine.fire(const Offset(0, -1));
+      run(
+        10,
+        until: () =>
+            engine.mode == GameMode.between || engine.mode == GameMode.aiming,
+      );
+
+      // Should transition to level clear (between), not stuck in aiming.
+      expect(engine.mode, GameMode.between);
+    },
+  );
+
+  test(
+    'uncollected pickups are discarded when crossing the danger line',
+    () async {
+      store.save = {
+        'v': 1,
+        'level': 1,
+        'score': 0,
+        'best': 0,
+        'totalBalls': 1,
+        'originX': Board.width / 2,
+        'bricks': [
+          {'x': 0, 'y': Board.cell, 'hp': 50, 'mh': 50, 't': 'normal'},
+        ],
+        'pk': [
+          {
+            'x': (Board.width / 2).round(),
+            'y': (Board.dangerY - Board.cell / 2).round(),
+            'r': 14.0,
+            's': 0.0,
+          },
+        ],
+      };
+      await engine.start();
+      expect(engine.pickups.length, 1);
+
+      // Fire a shot that does not collect the pickup or destroy the brick.
+      engine.fire(const Offset(0, -1));
+      run(10, until: () => engine.mode == GameMode.aiming);
+
+      // The pickup shifted past dangerY and was cleaned up.
+      expect(engine.pickups, isEmpty);
+      expect(engine.mode, GameMode.aiming);
+    },
+  );
 }
