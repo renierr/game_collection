@@ -81,10 +81,7 @@ class Twenty48Engine extends ChangeNotifier {
   bool _stuck = false;
   int _lastMergedValue = 0;
 
-  /// The state one move ago. A single step of undo is enough to recover from a
-  /// misread swipe, which is the mistake worth forgiving; more would let the
-  /// player search the tree instead of playing.
-  _Snapshot? _undo;
+  final List<_Snapshot> _history = [];
 
   Twenty48Engine({Twenty48Store? store, math.Random? random})
     : _store = store ?? const Twenty48Store(),
@@ -100,7 +97,7 @@ class Twenty48Engine extends ChangeNotifier {
   /// No legal move remains.
   bool get isStuck => _stuck;
 
-  bool get canUndo => _undo != null;
+  bool get canUndo => _history.isNotEmpty;
 
   /// The largest value produced by the last move's merges, or 0 if it merged
   /// nothing. The page pitches its merge sound from this.
@@ -143,7 +140,7 @@ class Twenty48Engine extends ChangeNotifier {
     _won = false;
     _stuck = false;
     _lastMergedValue = 0;
-    _undo = null;
+    _history.clear();
     _spawn();
     _spawn();
   }
@@ -167,7 +164,7 @@ class Twenty48Engine extends ChangeNotifier {
 
     if (!_slide(direction)) return false;
 
-    _undo = snapshot;
+    _history.add(snapshot);
     _moves++;
     _spawn();
     if (_score > _best) {
@@ -182,10 +179,9 @@ class Twenty48Engine extends ChangeNotifier {
   }
 
   void undoMove() {
-    final snapshot = _undo;
-    if (snapshot == null) return;
-    _restore(snapshot);
-    _undo = null;
+    if (_history.isEmpty) return;
+    _restore(_history.removeLast());
+    _lastMergedValue = 0;
     unawaited(_persist());
     notifyListeners();
   }
@@ -348,7 +344,7 @@ class Twenty48Engine extends ChangeNotifier {
     _won = data['won'] == true;
     _nextId = nextId;
     _absorbed.clear();
-    _undo = null;
+    _history.clear();
     for (var i = 0; i < Twenty48Grid.cells; i++) {
       _grid[i] = grid[i];
     }

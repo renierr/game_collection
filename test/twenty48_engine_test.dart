@@ -146,7 +146,7 @@ void main() {
     expect(engine.moves, 0);
   });
 
-  test('undo restores the board and the score', () async {
+  test('undo restores the board and the score across multiple steps', () async {
     final engine = await _engineWith([
       [2, 2, 0, 0],
       [0, 0, 0, 0],
@@ -157,13 +157,23 @@ void main() {
 
     engine.move(GameDirection.left);
     expect(engine.score, 4);
+    expect(engine.moves, 1);
+    expect(engine.canUndo, isTrue);
+
+    engine.move(GameDirection.down);
+    expect(engine.moves, 2);
     expect(engine.canUndo, isTrue);
 
     engine.undoMove();
+    expect(engine.moves, 1);
+    expect(engine.score, 4);
+    expect(engine.canUndo, isTrue);
+
+    engine.undoMove();
+    expect(engine.moves, 0);
     expect(engine.score, 0);
     expect(_grid(engine)[0][0], 2);
     expect(_grid(engine)[0][1], 2);
-    // One step only — undoing twice would let the player search the tree.
     expect(engine.canUndo, isFalse);
   });
 
