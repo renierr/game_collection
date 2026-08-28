@@ -15,6 +15,12 @@ class WavBuilder {
   WavBuilder._();
 
   static const int sampleRate = 44100;
+  static const int _headerBytes = 44;
+
+  /// Poles cascaded in [noise]'s filters. Three below the cutoff buys a real
+  /// rumble; two above is enough for a crack without leaving it thin.
+  static const int _lowPoles = 3;
+  static const int _highPoles = 2;
 
   /// A single decaying tone.
   ///
@@ -22,38 +28,120 @@ class WavBuilder {
   /// over its whole length, which is what makes a bare oscillator read as a
   /// blip rather than a beep. [slideHz] bends the pitch by that many hertz
   /// across the clip — negative for the downward chirp of something breaking.
+  ///
+  /// [decay] is how fast that fade is: the default 6.9 reaches ~0.1% at the
+  /// end of the clip, and a larger number front-loads the sound into a click.
+  /// [attackSeconds] ramps the very start in, which a low-frequency body needs
+  /// — a sine that begins at full amplitude is a click, not a thump.
   static Uint8List tone({
     required double frequency,
     required double seconds,
     Waveform waveform = Waveform.sine,
     double gain = 0.3,
     double slideHz = 0,
+    double decay = 6.9,
+    double attackSeconds = 0,
   }) {
     final count = (sampleRate * seconds).round();
     final samples = Float64List(count);
+    final attack = (sampleRate * attackSeconds).round();
     var phase = 0.0;
     for (var i = 0; i < count; i++) {
       final t = i / count;
       final hz = math.max(30.0, frequency + slideHz * t);
       phase += 2 * math.pi * hz / sampleRate;
-      // Exponential decay to ~0.1% — the same shape as the browser original's
-      // `gain.exponentialRampToValueAtTime(0.0001, ...)`.
-      samples[i] = _wave(waveform, phase) * gain * math.exp(-6.9 * t);
+      var envelope = math.exp(-decay * t);
+      if (i < attack) envelope *= i / attack;
+      samples[i] = _wave(waveform, phase) * gain * envelope;
     }
     return _encode(samples);
   }
 
-  /// White noise with a linear fade-out — impacts, explosions, shatters.
+  /// Noise — impacts, explosions, shatters.
+  ///
+  /// Colour it with the filters rather than leaving it white: [lowPassHz] turns
+  /// a hiss into a rumble, which is the difference between a bomb and static,
+  /// and [highPassHz] leaves the bright crack of something shattering. The
+  /// result is normalized back to [gain], so a cutoff can be chosen for its
+  /// sound without also having to re-balance the level.
+  ///
+  /// Both filters are cascaded one-poles rather than single ones. A single pole
+  /// rolls off at 6 dB per octave, which on noise is nowhere near enough — the
+  /// octaves above the cutoff survive loudly enough that a "low-passed" rumble
+  /// still measures and sounds like a hiss.
+  ///
+  /// [decay] fades exponentially like [tone]; the default 0 keeps the original
+  /// linear fade.
   static Uint8List noise({
     required double seconds,
     double gain = 0.3,
     int seed = 0x5eed,
+    double decay = 0,
+    double lowPassHz = 0,
+    double highPassHz = 0,
   }) {
     final count = (sampleRate * seconds).round();
     final samples = Float64List(count);
     final random = math.Random(seed);
+
+    final lowK = lowPassHz > 0
+        ? 1 - math.exp(-2 * math.pi * lowPassHz / sampleRate)
+        : 0.0;
+    final highA = highPassHz > 0
+        ? 1 / (1 + 2 * math.pi * highPassHz / sampleRate)
+        : 0.0;
+    final low = Float64List(_lowPoles);
+    final lastIn = Float64List(_highPoles);
+    final lastOut = Float64List(_highPoles);
+    var peak = 0.0;
+
     for (var i = 0; i < count; i++) {
-      samples[i] = (random.nextDouble() * 2 - 1) * gain * (1 - i / count);
+      var value = random.nextDouble() * 2 - 1;
+      if (lowPassHz > 0) {
+        for (var p = 0; p < _lowPoles; p++) {
+          low[p] += (value - low[p]) * lowK;
+          value = low[p];
+        }
+      }
+      if (highPassHz > 0) {
+        for (var p = 0; p < _highPoles; p++) {
+          lastOut[p] = highA * (lastOut[p] + value - lastIn[p]);
+          lastIn[p] = value;
+          value = lastOut[p];
+        }
+      }
+      samples[i] = value;
+      final magnitude = value.abs();
+      if (magnitude > peak) peak = magnitude;
+    }
+
+    if (peak <= 0) return _encode(samples);
+    final scale = gain / peak;
+    for (var i = 0; i < count; i++) {
+      final t = i / count;
+      samples[i] *= scale * (decay > 0 ? math.exp(-decay * t) : 1 - t);
+    }
+    return _encode(samples);
+  }
+
+  /// Layers clips on top of each other, all starting together — the way a real
+  /// impact is a bright transient, a body and a tail at once rather than three
+  /// sounds in a row. The result runs as long as the longest input, and
+  /// [_encode]'s hard clip keeps a hot mix from wrapping.
+  static Uint8List mix(List<Uint8List> clips) {
+    var total = 0;
+    for (final clip in clips) {
+      final count = (clip.length - _headerBytes) ~/ 2;
+      if (count > total) total = count;
+    }
+    final samples = Float64List(total);
+    for (final clip in clips) {
+      final data = ByteData.sublistView(clip);
+      final count = (clip.length - _headerBytes) ~/ 2;
+      for (var i = 0; i < count; i++) {
+        samples[i] +=
+            data.getInt16(_headerBytes + i * 2, Endian.little) / 32767;
+      }
     }
     return _encode(samples);
   }
@@ -102,7 +190,7 @@ class WavBuilder {
   /// Wraps float samples in a 44-byte canonical WAV header. Samples are hard
   /// clipped, so a mixed [sequence] that overshoots distorts rather than wraps.
   static Uint8List _encode(Float64List samples) {
-    const headerBytes = 44;
+    const headerBytes = _headerBytes;
     final dataBytes = samples.length * 2;
     final bytes = ByteData(headerBytes + dataBytes);
 

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -12,12 +13,12 @@ import '../../l10n/app_localizations.dart';
 import '../../providers/app_state.dart';
 import '../../services/game_audio.dart';
 import '../../widgets/game_layout.dart';
+import '../../widgets/game_result_overlay.dart';
 import '../../widgets/responsive_layout.dart';
 import 'engine/ricochet_audio.dart';
 import 'engine/ricochet_engine.dart';
 import 'engine/ricochet_strings.dart';
 import 'ricochet_colors.dart';
-import 'widgets/game_over_overlay.dart';
 import 'widgets/power_menu_sheet.dart';
 import 'widgets/ricochet_action_bar.dart';
 import 'widgets/ricochet_board.dart';
@@ -42,6 +43,19 @@ class _RicochetPageState extends State<RicochetPage>
   late final Ticker _ticker;
   Duration _lastTick = Duration.zero;
 
+  /// Keyboard play. Aim keys are polled per frame rather than driven by key
+  /// repeat: the repeat rate is an OS setting, and a sight that lurches at
+  /// whatever cadence the desktop happens to use is unaimable.
+  final FocusNode _keyboard = FocusNode(debugLabel: 'ricochet');
+  bool _focused = false;
+
+  /// Radians per second the sight swings at, and the fine-aim divisor Shift
+  /// applies — a full sweep in about a second and a half, or twelve with Shift.
+  /// Fine aim is for placing a shot into a one-tile gap, so it is deliberately
+  /// far slower than a scale factor you would guess at.
+  static const double _aimSpeed = 2.1;
+  static const double _fineAim = 0.12;
+
   /// Keeps a volley resolving while the app is backgrounded and the Ticker is
   /// silenced — a turn can run for tens of seconds with no input, and losing it
   /// to a screen lock would be indistinguishable from a crash.
@@ -59,6 +73,7 @@ class _RicochetPageState extends State<RicochetPage>
     _ticker = createTicker(_onTick);
     onDispose(() => WidgetsBinding.instance.removeObserver(this));
     onDispose(_ticker.dispose);
+    onDispose(_keyboard.dispose);
     onDispose(_stopBackgroundTicker);
     onDispose(_releaseWakeLock);
     onDispose(_engine.dispose);
@@ -105,6 +120,7 @@ class _RicochetPageState extends State<RicochetPage>
         ? 1 / 60
         : (elapsed - _lastTick).inMicroseconds / 1e6;
     _lastTick = elapsed;
+    _steerAim(dt);
     // A frame longer than a fifth of a second is a stall, not slow motion.
     _engine.update(dt.clamp(0.0, 0.25));
     _syncWakeLock(_keepScreenAwake);
@@ -153,11 +169,91 @@ class _RicochetPageState extends State<RicochetPage>
     unawaited(WakelockPlus.disable().catchError((_) {}));
   }
 
+  // ------------------------------------------------------------------ keyboard
+
+  void _steerAim(double dt) {
+    if (!_focused || _engine.mode != GameMode.aiming) return;
+    final keys = HardwareKeyboard.instance;
+    var turn = 0.0;
+    if (keys.isLogicalKeyPressed(LogicalKeyboardKey.arrowLeft) ||
+        keys.isLogicalKeyPressed(LogicalKeyboardKey.keyA)) {
+      turn -= 1;
+    }
+    if (keys.isLogicalKeyPressed(LogicalKeyboardKey.arrowRight) ||
+        keys.isLogicalKeyPressed(LogicalKeyboardKey.keyD)) {
+      turn += 1;
+    }
+    if (turn == 0) return;
+    _engine.rotateAim(
+      turn * _aimSpeed * dt * (keys.isShiftPressed ? _fineAim : 1),
+    );
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    // Once the run is over the panel owns the keyboard: claiming Space or the
+    // arrows here would leave its buttons unreachable.
+    if (_engine.mode == GameMode.over) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.space ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      _engine.fireAimed();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.escape) {
+      // Only while a shot is lined up, so Escape still means "leave" otherwise.
+      if (!_engine.aiming) return KeyEventResult.ignored;
+      _engine.cancelAim();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyR) {
+      _engine.recallBalls();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyF) {
+      _engine.boostSpeed();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyP) {
+      unawaited(_openPowerMenu());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyH) {
+      _openHelp();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyM) {
+      final appState = context.read<AppState>();
+      appState.setSoundEnabled(!appState.soundEnabled);
+      return KeyEventResult.handled;
+    }
+    // The aim keys are read in [_steerAim]; claim them here so they never reach
+    // focus traversal and move the highlight off the board mid-shot.
+    if (key == LogicalKeyboardKey.arrowLeft ||
+        key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.keyA ||
+        key == LogicalKeyboardKey.keyD) {
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   // -------------------------------------------------------------------- intent
 
   Future<void> _openPowerMenu() async {
     final power = await PowerMenuSheet.show(context, onHowToPlay: _openHelp);
     if (power != null) _engine.usePower(power);
+    // A sheet or a HUD button takes the focus with it; take it back so the
+    // keyboard keeps playing without a click on the board first.
+    if (mounted) _keyboard.requestFocus();
+  }
+
+  /// Restarts, then takes the keyboard back from the result panel's button so
+  /// the next shot can be aimed without reaching for the mouse.
+  Future<void> _restart(Future<void> Function() action) async {
+    await action();
+    if (mounted) _keyboard.requestFocus();
   }
 
   void _openHelp() {
@@ -175,67 +271,96 @@ class _RicochetPageState extends State<RicochetPage>
     return GameLayout(
       title: l10n.gameNameRicochet,
       backgroundColor: RicochetColors.page,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final hud = RicochetHud(
-            engine: _engine,
-            vertical: constraints.canSplit,
-            soundEnabled: appState.soundEnabled,
-            onOpenPowers: _openPowerMenu,
-            onRestartLevel: () => unawaited(_engine.retryLevel()),
-            onOpenHelp: _openHelp,
-            onToggleSound: () =>
-                appState.setSoundEnabled(!appState.soundEnabled),
-          );
+      // Autofocus so a desktop player can aim the instant the page opens,
+      // without clicking the board first. The node sits above the HUD, so a
+      // button taking the focus keeps [hasFocus] true and keys keep working.
+      child: Focus(
+        autofocus: true,
+        focusNode: _keyboard,
+        onFocusChange: (focused) => _focused = focused,
+        onKeyEvent: _onKey,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final hud = RicochetHud(
+              engine: _engine,
+              vertical: constraints.canSplit,
+              soundEnabled: appState.soundEnabled,
+              onOpenPowers: _openPowerMenu,
+              onRestartLevel: () => unawaited(_restart(_engine.retryLevel)),
+              onOpenHelp: _openHelp,
+              onToggleSound: () =>
+                  appState.setSoundEnabled(!appState.soundEnabled),
+            );
 
-          final board = Stack(
-            fit: StackFit.passthrough,
-            children: [
-              RicochetBoard(engine: _engine),
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: RicochetActionBar(engine: _engine),
-                ),
-              ),
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: _engine.hud,
-                  builder: (context, _) => _engine.mode == GameMode.over
-                      ? GameOverOverlay(
-                          engine: _engine,
-                          onRetryLevel: () => unawaited(_engine.retryLevel()),
-                          onStartOver: () => unawaited(_engine.resetGame()),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-            ],
-          );
-
-          // Wide enough for two panes: the HUD becomes a fixed column beside
-          // the board, which is what stops a landscape phone from spending half
-          // its height on a stats row.
-          if (constraints.canSplit) {
-            return Row(
+            final board = Stack(
+              fit: StackFit.passthrough,
               children: [
-                Expanded(child: Center(child: board)),
-                SizedBox(
-                  width: math.min(220, constraints.maxWidth * 0.28),
-                  child: hud,
+                RicochetBoard(engine: _engine),
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: RicochetActionBar(engine: _engine),
+                  ),
+                ),
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _engine.hud,
+                    builder: (context, _) => _engine.mode == GameMode.over
+                        ? GameResultOverlay(
+                            title: l10n.ricochetGameOver,
+                            headline: '${_engine.score}',
+                            headlineColor: RicochetColors.bonus,
+                            subtitle:
+                                _engine.score >= _engine.best &&
+                                    _engine.score > 0
+                                ? l10n.ricochetNewBest
+                                : l10n.ricochetBestScore(_engine.best),
+                            footnote: l10n.ricochetReachedLevel(_engine.level),
+                            scrimColor: RicochetColors.board,
+                            autofocusPrimary: true,
+                            actions: [
+                              GameResultAction(
+                                label: l10n.ricochetRetryLevel,
+                                icon: Icons.replay_rounded,
+                                onPressed: () => _restart(_engine.retryLevel),
+                              ),
+                              GameResultAction(
+                                label: l10n.ricochetStartOver,
+                                icon: Icons.restart_alt_rounded,
+                                onPressed: () => _restart(_engine.resetGame),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 ),
               ],
             );
-          }
-          return Column(
-            children: [
-              // Leave room for the floating back button in the top-left.
-              const SizedBox(height: 44),
-              hud,
-              Expanded(child: Center(child: board)),
-            ],
-          );
-        },
+
+            // Wide enough for two panes: the HUD becomes a fixed column beside
+            // the board, which is what stops a landscape phone from spending half
+            // its height on a stats row.
+            if (constraints.canSplit) {
+              return Row(
+                children: [
+                  Expanded(child: Center(child: board)),
+                  SizedBox(
+                    width: math.min(220, constraints.maxWidth * 0.28),
+                    child: hud,
+                  ),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                // Leave room for the floating back button in the top-left.
+                const SizedBox(height: 44),
+                hud,
+                Expanded(child: Center(child: board)),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

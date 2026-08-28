@@ -457,6 +457,25 @@ class AppLocalizationsDe extends AppLocalizations {
       'Neu starten — spielt das aktuelle Level von vorn.';
 
   @override
+  String get ricochetHelpKeyboardTitle => 'Tastatur';
+
+  @override
+  String get ricochetHelpKeyboardAim =>
+      'Links / Rechts (oder A / D) — Visier schwenken. Shift halten für Feinzielen.';
+
+  @override
+  String get ricochetHelpKeyboardFire =>
+      'Leertaste oder Enter — den anvisierten Schuss abfeuern.';
+
+  @override
+  String get ricochetHelpKeyboardRecall =>
+      'R — Bälle zurückrufen. F — Salve beschleunigen.';
+
+  @override
+  String get ricochetHelpKeyboardMenu =>
+      'P — Power-ups. H — diese Seite. M — stummschalten.';
+
+  @override
   String get ricochetHelpLevelsTitle => 'Leveldesign';
 
   @override

@@ -29,32 +29,86 @@ class RicochetSfx {
   /// A random pitch variant of the brick-impact tick.
   static String get hit => '$hitPrefix${_random.nextInt(hitVariants)}';
 
-  /// Builds every clip. Runs off the first frame of the game page.
-  static Future<void> load() async {
-    final clips = <String, Uint8List>{
+  /// Builds every clip. Separate from [load] so the synthesis can be rendered
+  /// and inspected without an audio device.
+  static Map<String, Uint8List> build() {
+    return <String, Uint8List>{
       for (var i = 0; i < hitVariants; i++)
-        '$hitPrefix$i': WavBuilder.tone(
-          // The original jittered 300–420 Hz per hit; the variants span the
-          // same range in even steps.
-          frequency: 300 + 120 * i / (hitVariants - 1),
-          seconds: 0.05,
-          waveform: Waveform.square,
-          gain: 0.09,
+        '$hitPrefix$i': WavBuilder.mix([
+          // An impact is a transient, not a note: a bright click of noise for
+          // the contact, and a pitched body under it that falls away at once.
+          // The original's bare square wave read as a beep because it had the
+          // body and none of the click.
+          WavBuilder.noise(
+            seconds: 0.03,
+            gain: 0.12,
+            decay: 14,
+            highPassHz: 800,
+            lowPassHz: 4500,
+            seed: 0x51 + i,
+          ),
+          WavBuilder.tone(
+            // The original jittered 300–420 Hz per hit; the variants span the
+            // same range in even steps.
+            frequency: 300 + 120 * i / (hitVariants - 1),
+            seconds: 0.045,
+            waveform: Waveform.triangle,
+            gain: 0.10,
+            slideHz: -170,
+            decay: 13,
+          ),
+        ]),
+      breakTile: WavBuilder.mix([
+        // Shattering is the same shape with the noise pushed brighter and held
+        // longer — the difference between a tile taking a hit and coming apart.
+        WavBuilder.noise(
+          seconds: 0.14,
+          gain: 0.17,
+          decay: 9,
+          highPassHz: 900,
+          lowPassHz: 5200,
+          seed: 0xbeef,
         ),
-      breakTile: WavBuilder.tone(
-        frequency: 520,
-        seconds: 0.09,
-        waveform: Waveform.triangle,
-        gain: 0.26,
-        slideHz: -180,
-      ),
-      boom: WavBuilder.tone(
-        frequency: 90,
-        seconds: 0.35,
-        waveform: Waveform.sawtooth,
-        gain: 0.3,
-        slideHz: -40,
-      ),
+        WavBuilder.tone(
+          frequency: 620,
+          seconds: 0.11,
+          waveform: Waveform.triangle,
+          gain: 0.19,
+          slideHz: -330,
+          decay: 9,
+        ),
+      ]),
+      boom: WavBuilder.mix([
+        // Three layers, because that is what an explosion is: the crack of the
+        // detonation, a low-passed roar for the body, and a pitch-swept sine
+        // under both for the thump you feel. A single sawtooth had none of the
+        // three and read as a buzz.
+        WavBuilder.noise(
+          seconds: 0.06,
+          gain: 0.16,
+          decay: 18,
+          highPassHz: 1500,
+          seed: 0xb00,
+        ),
+        WavBuilder.noise(
+          seconds: 0.55,
+          gain: 0.38,
+          decay: 5.2,
+          lowPassHz: 380,
+          seed: 0x0b1,
+        ),
+        WavBuilder.tone(
+          frequency: 120,
+          seconds: 0.34,
+          waveform: Waveform.sine,
+          gain: 0.40,
+          slideHz: -88,
+          decay: 5.5,
+          // Without a ramp the sine starts mid-cycle and cracks; the thump has
+          // to swell, however briefly.
+          attackSeconds: 0.004,
+        ),
+      ]),
       plus: WavBuilder.sequence(
         notes: const [
           ToneSpec(frequency: 520, seconds: 0.08, gain: 0.22),
@@ -79,13 +133,23 @@ class RicochetSfx {
         ],
         gapSeconds: 0.06,
       ),
-      launch: WavBuilder.tone(
-        frequency: 340,
-        seconds: 0.09,
-        waveform: Waveform.triangle,
-        gain: 0.2,
-        slideHz: 220,
-      ),
+      launch: WavBuilder.mix([
+        WavBuilder.tone(
+          frequency: 340,
+          seconds: 0.09,
+          waveform: Waveform.triangle,
+          gain: 0.18,
+          slideHz: 220,
+        ),
+        // A breath of air behind the chirp, so firing reads as a release.
+        WavBuilder.noise(
+          seconds: 0.07,
+          gain: 0.07,
+          decay: 11,
+          highPassHz: 1400,
+          seed: 0x1a,
+        ),
+      ]),
       levelClear: WavBuilder.sequence(
         notes: const [
           ToneSpec(
@@ -145,6 +209,9 @@ class RicochetSfx {
         gapSeconds: 0.16,
       ),
     };
-    await GameAudio.instance.registerAll(clips);
   }
+
+  /// Builds every clip and hands them to the mixer. Runs off the first frame of
+  /// the game page.
+  static Future<void> load() => GameAudio.instance.registerAll(build());
 }

@@ -19,6 +19,12 @@ class GameResultOverlay extends StatelessWidget {
   /// Primary action first; it gets the filled button.
   final List<GameResultAction> actions;
 
+  /// Focuses the primary action as the panel appears, so a keyboard player can
+  /// answer it with Enter. Off by default: a game whose board is driven from a
+  /// focus node of its own would lose the keyboard to this and never get it
+  /// back once the panel closes.
+  final bool autofocusPrimary;
+
   /// Painted behind the panel at high opacity, normally the game's own board
   /// colour so the overlay reads as part of the board rather than app chrome.
   final Color scrimColor;
@@ -32,6 +38,7 @@ class GameResultOverlay extends StatelessWidget {
     required this.actions,
     required this.scrimColor,
     this.footnote,
+    this.autofocusPrimary = false,
   });
 
   @override
@@ -100,6 +107,7 @@ class GameResultOverlay extends StatelessWidget {
                     padding: EdgeInsets.only(top: i == 0 ? 0 : 10),
                     child: i == 0
                         ? FilledButton.icon(
+                            autofocus: autofocusPrimary,
                             onPressed: actions[i].onPressed,
                             icon: Icon(actions[i].icon),
                             label: Text(actions[i].label),

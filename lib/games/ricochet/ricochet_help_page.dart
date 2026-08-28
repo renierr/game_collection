@@ -114,6 +114,15 @@ class RicochetHelpPage extends StatelessWidget {
                 l10n.ricochetHelpControlsRestart,
               ],
             ),
+            _Section(title: l10n.ricochetHelpKeyboardTitle),
+            _Bullets(
+              items: [
+                l10n.ricochetHelpKeyboardAim,
+                l10n.ricochetHelpKeyboardFire,
+                l10n.ricochetHelpKeyboardRecall,
+                l10n.ricochetHelpKeyboardMenu,
+              ],
+            ),
             _Section(title: l10n.ricochetHelpLevelsTitle),
             Text(
               l10n.ricochetHelpLevelsText,

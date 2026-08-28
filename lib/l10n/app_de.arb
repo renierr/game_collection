@@ -217,6 +217,12 @@
   "ricochetHelpControlsMenu": "Power-ups — öffnet das Menü mit unbegrenzt nutzbaren Ladungen.",
   "ricochetHelpControlsRestart": "Neu starten — spielt das aktuelle Level von vorn.",
 
+  "ricochetHelpKeyboardTitle": "Tastatur",
+  "ricochetHelpKeyboardAim": "Links / Rechts (oder A / D) — Visier schwenken. Shift halten für Feinzielen.",
+  "ricochetHelpKeyboardFire": "Leertaste oder Enter — den anvisierten Schuss abfeuern.",
+  "ricochetHelpKeyboardRecall": "R — Bälle zurückrufen. F — Salve beschleunigen.",
+  "ricochetHelpKeyboardMenu": "P — Power-ups. H — diese Seite. M — stummschalten.",
+
   "ricochetHelpLevelsTitle": "Leveldesign",
   "ricochetHelpLevelsText": "Jedes Feld wird aus einer von neunzehn handgezeichneten Schablonen geschnitten, automatisch auf dem 13-Spalten-Raster zentriert und zufällig gespiegelt. Über der Gefahrenlinie ist eine freie Zone garantiert, damit jeder Stein erreichbar bleibt. Hohe Kompositionen können über dem oberen Rand beginnen und pro Zug eine Reihe einfahren. Ab Level 8 stapeln sich meist zwei Schablonen zu einer größeren Komposition. Die Trefferpunkte steigen endlos mit dem Level, und die exotischen Steine schalten sich nach und nach frei: Sprengsatz ab Level 3, Durchschlag ab 5, Kugeln ab 7, Rampen ab 10.",
 

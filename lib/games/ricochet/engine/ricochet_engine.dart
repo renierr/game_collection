@@ -148,6 +148,11 @@ class RicochetEngine {
   bool aiming = false;
   Offset? aimPoint;
 
+  /// The keyboard's aim, in radians, `-pi/2` being straight up. Kept in sync
+  /// from the pointer too, so picking up the keyboard mid-run continues from
+  /// wherever the last drag left the sight rather than snapping to vertical.
+  double _aimAngle = -math.pi / 2;
+
   int speedMultiplier = 1;
   bool _autoSped = false;
 
@@ -157,6 +162,16 @@ class RicochetEngine {
   /// True while [_collideBricks] is walking [bricks]. An explosion triggered
   /// mid-scan must not compact the list out from under that walk.
   bool _scanning = false;
+
+  /// Cell-bucketed bricks, so a ball tests the handful of tiles it could
+  /// possibly touch instead of the whole board. A boosted volley of a hundred
+  /// balls sub-steps several times per frame; at that rate a linear scan of
+  /// sixty bricks is millions of comparisons a second, and this is the one hot
+  /// loop in the game. Bricks are grid-aligned by construction, so the buckets
+  /// are exact rather than an approximation.
+  final Map<int, List<Brick>> _grid = {};
+  bool _gridDirty = true;
+  int _gridCount = -1;
 
   bool _saveDirty = false;
   double _saveTimer = 0;
@@ -374,8 +389,48 @@ class RicochetEngine {
         14,
       );
       _burst(pickup.x, pickup.y, RicochetColors.pickup, 10);
-      GameAudio.instance.play(RicochetSfx.plus);
+      GameAudio.instance.play(RicochetSfx.plus, minGapMs: 70);
       _markHudDirty();
+    }
+  }
+
+  static int _cellKey(int col, int row) => row * 64 + col;
+
+  void _markGridDirty() => _gridDirty = true;
+
+  Map<int, List<Brick>> get _brickGrid {
+    // The length check is a backstop: any add or remove invalidates the buckets
+    // even if the caller forgot to say so.
+    if (_gridDirty || _gridCount != bricks.length) {
+      _grid.clear();
+      for (final brick in bricks) {
+        final key = _cellKey(
+          (brick.x / Board.cell).round(),
+          (brick.y / Board.cell).round(),
+        );
+        (_grid[key] ??= <Brick>[]).add(brick);
+      }
+      _gridCount = bricks.length;
+      _gridDirty = false;
+    }
+    return _grid;
+  }
+
+  /// Every brick whose expanded cell could contain the point [x], [y].
+  /// Yields at most nine buckets, and normally one or two.
+  Iterable<Brick> _bricksNear(double x, double y) sync* {
+    final grid = _brickGrid;
+    if (grid.isEmpty) return;
+    const r = Board.ballRadius;
+    final colLo = ((x - r) / Board.cell).floor() - 1;
+    final colHi = ((x + r) / Board.cell).floor();
+    final rowLo = ((y - r) / Board.cell).floor() - 1;
+    final rowHi = ((y + r) / Board.cell).floor();
+    for (var row = rowLo; row <= rowHi; row++) {
+      for (var col = colLo; col <= colHi; col++) {
+        final bucket = grid[_cellKey(col, row)];
+        if (bucket != null) yield* bucket;
+      }
     }
   }
 
@@ -392,7 +447,7 @@ class RicochetEngine {
   }
 
   bool _scanBricks(Ball ball) {
-    for (final brick in bricks) {
+    for (final brick in _bricksNear(ball.x, ball.y)) {
       if (brick.dead) continue;
       final left = brick.x - Board.ballRadius;
       final right = brick.x + brick.width + Board.ballRadius;
@@ -553,7 +608,13 @@ class RicochetEngine {
     if (brick.hp <= 0 || brick.type == TileType.bomb) {
       _destroy(brick);
     } else {
-      GameAudio.instance.play(RicochetSfx.hit);
+      // One volley can land dozens of ticks in a single frame; they read as one
+      // sound anyway, and spending a voice on each one silences everything else.
+      GameAudio.instance.play(
+        RicochetSfx.hit,
+        minGapMs: 45,
+        group: RicochetSfx.hitPrefix,
+      );
     }
   }
 
@@ -608,7 +669,7 @@ class RicochetEngine {
       case TileType.rampA:
       case TileType.rampB:
       case TileType.orb:
-        GameAudio.instance.play(RicochetSfx.breakTile);
+        GameAudio.instance.play(RicochetSfx.breakTile, minGapMs: 35);
         shake = math.min(shake + 2, 6);
     }
     _markHudDirty();
@@ -623,7 +684,7 @@ class RicochetEngine {
 
   void _armToast(String message, Color color) {
     _addText(Board.width / 2, RicochetTuning.toastY, message, color, 1.2, 15);
-    GameAudio.instance.play(RicochetSfx.arm);
+    GameAudio.instance.play(RicochetSfx.arm, important: true);
   }
 
   /// Everything within ~2 cells takes [damage]. Lethal by default, which is
@@ -633,7 +694,7 @@ class RicochetEngine {
       Ring(x: x, y: y, radius: Board.cell * 0.5, maxRadius: Board.cell * 2.1),
     );
     _burst(x, y, RicochetColors.blastLight, 26);
-    GameAudio.instance.play(RicochetSfx.boom);
+    GameAudio.instance.play(RicochetSfx.boom, minGapMs: 60, important: true);
     shake = math.max(shake, 10);
 
     final radius = RicochetTuning.explosionRadius;
@@ -689,7 +750,7 @@ class RicochetEngine {
           1,
           16,
         );
-        GameAudio.instance.play(RicochetSfx.plus);
+        GameAudio.instance.play(RicochetSfx.plus, important: true);
       case PowerUp.pierce:
         pierceCharges++;
         _armToast(strings.pierceArmed, RicochetColors.pierceLight);
@@ -720,7 +781,7 @@ class RicochetEngine {
     speedMultiplier = 1;
     _autoSped = false;
     mode = GameMode.shooting;
-    GameAudio.instance.play(RicochetSfx.launch);
+    GameAudio.instance.play(RicochetSfx.launch, important: true);
     _markHudDirty();
   }
 
@@ -763,7 +824,7 @@ class RicochetEngine {
       1,
       17,
     );
-    GameAudio.instance.play(RicochetSfx.arm);
+    GameAudio.instance.play(RicochetSfx.arm, important: true);
     _markHudDirty();
   }
 
@@ -778,6 +839,7 @@ class RicochetEngine {
     for (final brick in bricks) {
       brick.y += Board.cell;
     }
+    _markGridDirty();
     for (final pickup in pickups) {
       pickup.y += Board.cell;
     }
@@ -802,7 +864,7 @@ class RicochetEngine {
       );
       _showBanner(level + 1);
       totalBalls = math.min(totalBalls + 2, RicochetTuning.volleyCap);
-      GameAudio.instance.play(RicochetSfx.levelClear);
+      GameAudio.instance.play(RicochetSfx.levelClear, important: true);
       _betweenTimer = 1.1;
       mode = GameMode.between;
     } else {
@@ -814,7 +876,7 @@ class RicochetEngine {
   void _gameOver() {
     mode = GameMode.over;
     _recordBest();
-    GameAudio.instance.play(RicochetSfx.gameOver);
+    GameAudio.instance.play(RicochetSfx.gameOver, important: true);
     // The in-progress save is replaced by the level's checkpoint, so *Retry
     // Level* has a board to restore and a resumed app never lands on a dead run.
     final checkpoint = _checkpoint;
@@ -840,7 +902,7 @@ class RicochetEngine {
     }
     _showBanner(level);
     mode = GameMode.aiming;
-    GameAudio.instance.play(RicochetSfx.arm);
+    GameAudio.instance.play(RicochetSfx.arm, important: true);
     _markHudDirty();
   }
 
@@ -916,7 +978,9 @@ class RicochetEngine {
         vy = vy.abs();
       }
       var struck = false;
-      for (final brick in bricks) {
+      // Query the grid at the *unshifted* point rather than shifting every
+      // brick: the two are the same test, and this one is bucketed.
+      for (final brick in _bricksNear(px, py - offset)) {
         if (brick.dead) continue;
         if (px > brick.x - Board.ballRadius &&
             px < brick.x + brick.width + Board.ballRadius &&
@@ -946,12 +1010,18 @@ class RicochetEngine {
   void beginAim(Offset point) {
     if (mode != GameMode.aiming) return;
     aiming = true;
-    aimPoint = point;
+    _setAim(point);
   }
 
   void updateAim(Offset point) {
     if (!aiming) return;
+    _setAim(point);
+  }
+
+  void _setAim(Offset point) {
     aimPoint = point;
+    final direction = aimDirection(point);
+    _aimAngle = math.atan2(direction.dy, direction.dx);
   }
 
   void releaseAim(Offset point) {
@@ -964,6 +1034,33 @@ class RicochetEngine {
   void cancelAim() {
     aiming = false;
     aimPoint = null;
+  }
+
+  /// Swings the keyboard sight by [radians] and shows it. Aim is *held* between
+  /// presses — a key player lines the shot up over several frames and fires
+  /// with [fireAimed], where a finger does both in one gesture.
+  void rotateAim(double radians) {
+    if (mode != GameMode.aiming) return;
+    const m = RicochetTuning.minAngle;
+    _aimAngle = (_aimAngle + radians).clamp(-math.pi + m, -m);
+    aiming = true;
+    // The sight is a point on the aim ray, so the painter and the pointer path
+    // stay one code path.
+    aimPoint = Offset(
+      originX + math.cos(_aimAngle) * _aimReach,
+      Board.launchY + math.sin(_aimAngle) * _aimReach,
+    );
+  }
+
+  static const double _aimReach = 160;
+
+  /// Fires the shot the keyboard is currently sighting, arming one first when
+  /// the player has not touched the sight yet.
+  void fireAimed() {
+    if (mode != GameMode.aiming) return;
+    if (!aiming) rotateAim(0);
+    final point = aimPoint;
+    if (point != null) releaseAim(point);
   }
 
   // ------------------------------------------------------------------ effects
@@ -1057,6 +1154,7 @@ class RicochetEngine {
     bricks
       ..clear()
       ..addAll(layout.bricks);
+    _markGridDirty();
     pickups
       ..clear()
       ..addAll(layout.pickups);
@@ -1138,12 +1236,17 @@ class RicochetEngine {
       final y = (raw['y'] as num?)?.toDouble();
       final hp = (raw['hp'] as num?)?.toInt();
       if (x == null || y == null || hp == null || hp <= 0) continue;
-      if (y + Board.cell >= Board.dangerY) continue;
+      // Snap to the grid the buckets assume, so a hand-edited save cannot park
+      // a brick between cells where no ball would ever look for it.
+      final snappedX = (x / Board.cell).round() * Board.cell;
+      final snappedY = (y / Board.cell).round() * Board.cell;
+      if (snappedX < 0 || snappedX >= Board.width) continue;
+      if (snappedY + Board.cell >= Board.dangerY) continue;
       bricks.add(
         Brick(
           uid: _uidSeq++,
-          x: x,
-          y: y,
+          x: snappedX,
+          y: snappedY,
           hp: hp,
           maxHp: (raw['mh'] as num?)?.toInt() ?? hp,
           type: TileType.fromId(raw['t'] as String?) ?? TileType.normal,
@@ -1151,6 +1254,7 @@ class RicochetEngine {
         ),
       );
     }
+    _markGridDirty();
 
     pickups.clear();
     for (final raw in (data['pk'] as List?) ?? const []) {

@@ -207,13 +207,117 @@ void main() {
       'originX': Board.width / 2,
       'bricks': [
         {'x': 0, 'y': Board.dangerY.round(), 'hp': 3, 'mh': 3, 't': 'normal'},
-        {'x': 0, 'y': 40, 'hp': 3, 'mh': 3, 't': 'normal'},
+        {'x': 0, 'y': Board.cell, 'hp': 3, 'mh': 3, 't': 'normal'},
       ],
       'pk': const [],
     };
     await engine.start();
     expect(engine.bricks.length, 1);
-    expect(engine.bricks.single.y, 40);
+    expect(engine.bricks.single.y, Board.cell);
+  });
+
+  test('a hand-edited save cannot place a brick between cells', () async {
+    store.save = {
+      'v': 1,
+      'level': 4,
+      'score': 10,
+      'best': 10,
+      'totalBalls': 5,
+      'originX': Board.width / 2,
+      'bricks': [
+        {'x': 5, 'y': 40, 'hp': 3, 'mh': 3, 't': 'normal'},
+        {'x': -80, 'y': 40, 'hp': 3, 'mh': 3, 't': 'normal'},
+      ],
+      'pk': const [],
+    };
+    await engine.start();
+    expect(engine.bricks.length, 1);
+    expect(engine.bricks.single.x, 0);
+    expect(engine.bricks.single.y, Board.cell);
+  });
+
+  test('a ball still finds a brick in every cell it crosses', () async {
+    // The collision broad phase buckets bricks by cell; walk a column of them
+    // from the top of the board down to the launch area so a ball fired
+    // straight up has to cross every bucket boundary on the way.
+    const column = 6;
+    store.save = {
+      'v': 1,
+      'level': 1,
+      'score': 0,
+      'best': 0,
+      'totalBalls': 1,
+      'originX': (column + 0.5) * Board.cell,
+      'bricks': [
+        for (var row = 1; row < 16; row++)
+          {
+            'x': column * Board.cell,
+            'y': row * Board.cell,
+            'hp': 1,
+            'mh': 1,
+            't': 'normal',
+          },
+      ],
+      'pk': const [],
+    };
+    await engine.start();
+    final placed = engine.bricks.length;
+    expect(placed, greaterThan(8));
+
+    engine.fire(const Offset(0, -1));
+    run(6, until: () => engine.mode != GameMode.shooting);
+
+    // One ball, one bounce per brick: it eats its way up the column rather than
+    // sailing past bricks the buckets failed to report.
+    expect(engine.bricks.length, lessThan(placed));
+  });
+
+  test(
+    'keyboard aiming holds the sight between presses and fires it',
+    () async {
+      await engine.start();
+      expect(engine.aiming, isFalse);
+
+      engine.rotateAim(0.4);
+      expect(engine.aiming, isTrue);
+      final sight = engine.aimPoint!;
+      // Swung right of vertical, and the sight sits on the aim ray.
+      expect(sight.dx, greaterThan(engine.originX));
+      expect(sight.dy, lessThan(Board.launchY));
+
+      // The sight is held, not consumed: a second frame with no input keeps it.
+      engine.update(1 / 60);
+      expect(engine.aimPoint, sight);
+
+      engine.fireAimed();
+      expect(engine.mode, GameMode.shooting);
+      expect(engine.aiming, isFalse);
+    },
+  );
+
+  test('keyboard aim can never point flatter than the minimum angle', () async {
+    await engine.start();
+    for (var i = 0; i < 100; i++) {
+      engine.rotateAim(0.5);
+    }
+    expect(engine.aimDirection(engine.aimPoint!).dy, lessThan(0));
+
+    engine.cancelAim();
+    for (var i = 0; i < 100; i++) {
+      engine.rotateAim(-0.5);
+    }
+    expect(engine.aimDirection(engine.aimPoint!).dy, lessThan(0));
+  });
+
+  test('a drag hands its angle over to the keyboard', () async {
+    await engine.start();
+    engine.beginAim(Offset(engine.originX + 100, Board.launchY - 100));
+    engine.cancelAim();
+
+    // Picking the keyboard up continues from where the drag left the sight
+    // rather than snapping back to vertical.
+    engine.rotateAim(0);
+    expect(engine.aimPoint!.dx, greaterThan(engine.originX));
   });
 
   test('an unknown tile kind falls back to a plain brick', () async {

@@ -872,6 +872,36 @@ abstract class AppLocalizations {
   /// **'Replay — restarts the current level from its start.'**
   String get ricochetHelpControlsRestart;
 
+  /// No description provided for @ricochetHelpKeyboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard'**
+  String get ricochetHelpKeyboardTitle;
+
+  /// No description provided for @ricochetHelpKeyboardAim.
+  ///
+  /// In en, this message translates to:
+  /// **'Left / Right (or A / D) — swing the sight. Hold Shift for fine aim.'**
+  String get ricochetHelpKeyboardAim;
+
+  /// No description provided for @ricochetHelpKeyboardFire.
+  ///
+  /// In en, this message translates to:
+  /// **'Space or Enter — fire the shot the sight is holding.'**
+  String get ricochetHelpKeyboardFire;
+
+  /// No description provided for @ricochetHelpKeyboardRecall.
+  ///
+  /// In en, this message translates to:
+  /// **'R — recall the balls. F — speed up the volley.'**
+  String get ricochetHelpKeyboardRecall;
+
+  /// No description provided for @ricochetHelpKeyboardMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'P — power-ups. H — this page. M — mute.'**
+  String get ricochetHelpKeyboardMenu;
+
   /// No description provided for @ricochetHelpLevelsTitle.
   ///
   /// In en, this message translates to:

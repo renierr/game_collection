@@ -217,6 +217,12 @@
   "ricochetHelpControlsMenu": "Power-ups — open the menu for unlimited-use charges.",
   "ricochetHelpControlsRestart": "Replay — restarts the current level from its start.",
 
+  "ricochetHelpKeyboardTitle": "Keyboard",
+  "ricochetHelpKeyboardAim": "Left / Right (or A / D) — swing the sight. Hold Shift for fine aim.",
+  "ricochetHelpKeyboardFire": "Space or Enter — fire the shot the sight is holding.",
+  "ricochetHelpKeyboardRecall": "R — recall the balls. F — speed up the volley.",
+  "ricochetHelpKeyboardMenu": "P — power-ups. H — this page. M — mute.",
+
   "ricochetHelpLevelsTitle": "Level design",
   "ricochetHelpLevelsText": "Every board is cut from one of nineteen hand-drawn stencils, auto-centred on the 13-column grid and randomly mirrored. A clear zone above the danger line is guaranteed, so every tile is reachable. Tall compositions may start above the top edge and slide into view one row per turn. From level 8 two stencils usually stack into one bigger composition. Brick HP scales forever with the level, and the exotic tiles unlock as you climb: blast at level 3, pierce at 5, orbs at 7, ramps at 10.",
 

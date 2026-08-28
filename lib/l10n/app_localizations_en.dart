@@ -453,6 +453,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Replay — restarts the current level from its start.';
 
   @override
+  String get ricochetHelpKeyboardTitle => 'Keyboard';
+
+  @override
+  String get ricochetHelpKeyboardAim =>
+      'Left / Right (or A / D) — swing the sight. Hold Shift for fine aim.';
+
+  @override
+  String get ricochetHelpKeyboardFire =>
+      'Space or Enter — fire the shot the sight is holding.';
+
+  @override
+  String get ricochetHelpKeyboardRecall =>
+      'R — recall the balls. F — speed up the volley.';
+
+  @override
+  String get ricochetHelpKeyboardMenu =>
+      'P — power-ups. H — this page. M — mute.';
+
+  @override
   String get ricochetHelpLevelsTitle => 'Level design';
 
   @override
