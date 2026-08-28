@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_collection/app.dart';
+import 'package:game_collection/core/game_registry.dart';
 import 'package:game_collection/games/ricochet/config.dart';
 import 'package:game_collection/games/ricochet/widgets/ricochet_action_bar.dart';
+import 'package:game_collection/games/minesweeper/widgets/minesweeper_board.dart';
 import 'package:game_collection/games/ricochet/widgets/ricochet_board.dart';
+import 'package:game_collection/games/snake/widgets/snake_board.dart';
+import 'package:game_collection/games/tetris/widgets/tetris_board.dart';
+import 'package:game_collection/games/twenty48/widgets/twenty48_board.dart';
 import 'package:game_collection/l10n/app_localizations.dart';
 import 'package:game_collection/providers/app_state.dart';
 import 'package:game_collection/services/database_service.dart';
@@ -66,13 +71,35 @@ void main() {
     await letAsyncWorkFinish(tester);
   }
 
-  Future<void> openRicochet(WidgetTester tester) async {
-    await tester.tap(find.text(l10n.gameNameRicochet));
+  /// Taps a game's card on the overview and waits for its page to come up.
+  ///
+  /// The card may not be built yet on a small surface, so the grid is dragged
+  /// until it is rather than assuming the whole collection fits on screen.
+  Future<void> openGame(WidgetTester tester, String name) async {
+    final card = find.text(name);
+    if (card.evaluate().isEmpty) {
+      await tester.dragUntilVisible(
+        card,
+        find.byType(Scrollable).first,
+        const Offset(0, -120),
+      );
+    }
+    await tester.tap(card.first);
     await pumpFrames(tester, 24);
-    // The page's bootstrap builds the audio clips and asks the store for a
-    // saved run before the first board exists.
+    // A page's bootstrap builds its audio clips and asks its store for a saved
+    // run before the first board exists.
     await letAsyncWorkFinish(tester, 400);
     await pumpFrames(tester, 24);
+  }
+
+  Future<void> openRicochet(WidgetTester tester) =>
+      openGame(tester, l10n.gameNameRicochet);
+
+  /// Tears the app down. Every game page holds a ticker or a periodic timer, and
+  /// leaving one running past the end of a test fails it.
+  Future<void> closeApp(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await pumpFrames(tester, 2);
   }
 
   testWidgets('the overview lists the collection', (tester) async {
@@ -174,10 +201,10 @@ void main() {
     expect(find.text('11'), findsOneWidget);
   });
 
-  testWidgets('the game page fits every phone size', (tester) async {
-    // Four readouts beside four buttons above a board is the tightest row in
-    // the app; a debug overflow here is a thrown FlutterError, so a clean
-    // takeException is the assertion.
+  testWidgets('every game page fits every phone size', (tester) async {
+    // Readouts beside buttons above a board is the tightest row in the app, and
+    // a debug overflow is a thrown FlutterError, so a clean takeException is the
+    // assertion. Run for every game rather than the one that overflowed once.
     const sizes = [
       Size(320, 568), // smallest phone still in circulation
       Size(360, 640),
@@ -188,21 +215,99 @@ void main() {
     ];
     addTearDown(tester.view.reset);
 
-    for (final size in sizes) {
-      tester.view.physicalSize = size;
-      tester.view.devicePixelRatio = 1;
-      // Pumping an empty tree first tears down the previous app, so each size
-      // starts a fresh router back on the overview.
-      await tester.pumpWidget(const SizedBox.shrink());
+    for (final game in GameRegistry.all) {
+      final name = game.localizedName(l10n);
+      for (final size in sizes) {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        // Pumping an empty tree first tears down the previous app, so each size
+        // starts a fresh router back on the overview.
+        await closeApp(tester);
+        await pumpApp(tester);
+        await openGame(tester, name);
+        await pumpFrames(tester, 30);
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '$name does not fit ${size.width}x${size.height}',
+        );
+      }
+    }
+    await closeApp(tester);
+  });
+
+  testWidgets('every game page survives a run of frames', (tester) async {
+    // Catches an exception thrown from a painter or a simulation once the clock
+    // is running, which a single pump would miss.
+    for (final game in GameRegistry.all) {
+      await closeApp(tester);
       await pumpApp(tester);
-      await openRicochet(tester);
-      await pumpFrames(tester, 30);
+      await openGame(tester, game.localizedName(l10n));
+      await pumpFrames(tester, 240);
       expect(
         tester.takeException(),
         isNull,
-        reason: 'game page does not fit ${size.width}x${size.height}',
+        reason: '${game.id} threw while running',
       );
     }
+    await closeApp(tester);
+  });
+
+  testWidgets('2048 merges a pair on a swipe', (tester) async {
+    await pumpApp(tester);
+    await openGame(tester, l10n.gameName2048);
+
+    // A fresh board holds two tiles worth 2 or 4. Swiping every direction in
+    // turn is guaranteed to bring them together and score.
+    for (final offset in const [
+      Offset(0, -160),
+      Offset(-160, 0),
+      Offset(0, 160),
+      Offset(160, 0),
+    ]) {
+      await tester.drag(find.byType(Twenty48Board), offset);
+      await pumpFrames(tester, 20);
+    }
+    expect(tester.takeException(), isNull);
+    expect(find.text(l10n.commonScore.toUpperCase()), findsOneWidget);
+    await closeApp(tester);
+  });
+
+  testWidgets('Minesweeper uncovers a square on a tap', (tester) async {
+    await pumpApp(tester);
+    await openGame(tester, l10n.gameNameMinesweeper);
+
+    await tester.tap(find.byType(MinesweeperBoard));
+    await pumpFrames(tester, 40);
+    expect(tester.takeException(), isNull);
+    // The clock only starts once a square is uncovered, so a running clock is
+    // proof the tap reached the engine.
+    expect(find.text(l10n.minesweeperMines.toUpperCase()), findsOneWidget);
+    await closeApp(tester);
+  });
+
+  testWidgets('Tetris rotates a piece on a tap', (tester) async {
+    await pumpApp(tester);
+    await openGame(tester, l10n.gameNameTetris);
+
+    await tester.tap(find.byType(TetrisBoard));
+    await pumpFrames(tester, 30);
+    expect(tester.takeException(), isNull);
+    expect(find.text(l10n.tetrisHold.toUpperCase()), findsOneWidget);
+    await closeApp(tester);
+  });
+
+  testWidgets('Snake starts on a swipe', (tester) async {
+    await pumpApp(tester);
+    await openGame(tester, l10n.gameNameSnake);
+    expect(find.text(l10n.snakeTapToStart), findsOneWidget);
+
+    await tester.drag(find.byType(SnakeBoard), const Offset(0, -120));
+    await pumpFrames(tester, 60);
+    expect(tester.takeException(), isNull);
+    // The start prompt is gone once the run is under way.
+    expect(find.text(l10n.snakeTapToStart), findsNothing);
+    await closeApp(tester);
   });
 
   test('the route is derived from the game id', () {

@@ -1,7 +1,4 @@
-import 'dart:convert';
-
-import '../../../helpers/debug_log.dart';
-import '../../../services/database_service.dart';
+import '../../../core/game_store.dart';
 import '../config.dart' show RicochetGame;
 
 /// Ricochet's persistence: the in-progress run, the level checkpoint used by
@@ -16,58 +13,22 @@ class RicochetStore {
 
   const RicochetStore();
 
-  String get _gameId => RicochetGame.config.id;
+  GameStore get _store => GameStore(RicochetGame.config.id, 'Ricochet');
 
-  Future<int> loadBest() async {
-    final raw = await DatabaseService.instance.getSetting(_gameId, _keyBest);
-    return int.tryParse(raw ?? '') ?? 0;
-  }
+  Future<int> loadBest() => _store.readInt(_keyBest);
 
-  Future<void> saveBest(int best) => _write(_keyBest, best.toString());
+  Future<void> saveBest(int best) => _store.writeInt(_keyBest, best);
 
-  Future<Map<String, dynamic>?> loadSave() => _readJson(_keySave);
+  Future<Map<String, dynamic>?> loadSave() => _store.readJson(_keySave);
 
   Future<void> writeSave(Map<String, dynamic> data) =>
-      _writeJson(_keySave, data);
+      _store.writeJson(_keySave, data);
 
-  Future<void> clearSave() async {
-    try {
-      await DatabaseService.instance.deleteSetting(_gameId, _keySave);
-    } catch (e) {
-      errorLog('[Ricochet] Could not clear "$_keySave": $e');
-    }
-  }
+  Future<void> clearSave() => _store.delete(_keySave);
 
-  Future<Map<String, dynamic>?> loadCheckpoint() => _readJson(_keyCheckpoint);
+  Future<Map<String, dynamic>?> loadCheckpoint() =>
+      _store.readJson(_keyCheckpoint);
 
   Future<void> writeCheckpoint(Map<String, dynamic> data) =>
-      _writeJson(_keyCheckpoint, data);
-
-  Future<Map<String, dynamic>?> _readJson(String key) async {
-    final raw = await DatabaseService.instance.getSetting(_gameId, key);
-    if (raw == null || raw.isEmpty) return null;
-    try {
-      final decoded = jsonDecode(raw);
-      return decoded is Map<String, dynamic> ? decoded : null;
-    } catch (e) {
-      // A corrupt blob must cost the player at most this one save, never a
-      // crash on launch.
-      errorLog('[Ricochet] Discarding unreadable "$key": $e');
-      return null;
-    }
-  }
-
-  Future<void> _writeJson(String key, Map<String, dynamic> data) =>
-      _write(key, jsonEncode(data));
-
-  /// Saves are fire-and-forget from the frame loop, so a failed write must not
-  /// surface as an unhandled error — a full disk or a database closing under a
-  /// page teardown costs the player this one save, nothing more.
-  Future<void> _write(String key, String value) async {
-    try {
-      await DatabaseService.instance.setSetting(_gameId, key, value);
-    } catch (e) {
-      errorLog('[Ricochet] Could not save "$key": $e');
-    }
-  }
+      _store.writeJson(_keyCheckpoint, data);
 }

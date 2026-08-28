@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../games/minesweeper/config.dart';
 import '../games/ricochet/config.dart';
+import '../games/snake/config.dart';
+import '../games/tetris/config.dart';
+import '../games/twenty48/config.dart';
 import '../l10n/app_localizations.dart';
 import 'game_model.dart';
 
@@ -26,7 +30,13 @@ class GameRegistry {
     ),
   };
 
-  static const List<GameModel> all = [RicochetGame.config];
+  static const List<GameModel> all = [
+    RicochetGame.config,
+    SnakeGame.config,
+    TetrisGame.config,
+    Twenty48Game.config,
+    MinesweeperGame.config,
+  ];
 
   static String _arcadeTitle(AppLocalizations l10n) => l10n.sectionTitleArcade;
 

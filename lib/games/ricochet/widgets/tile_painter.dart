@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../engine/tile.dart';
 import '../ricochet_colors.dart';
-import 'board_text.dart';
+import '../../../helpers/board_text.dart';
 
 /// Draws Ricochet's tiles and pickups.
 ///

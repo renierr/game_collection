@@ -82,8 +82,6 @@
   "ricochetPowerMenu": "Power-ups",
   "ricochetRestartLevel": "Replay this level",
   "ricochetHowToPlay": "How to play",
-  "ricochetMute": "Mute",
-  "ricochetUnmute": "Unmute",
   "ricochetRecall": "Recall",
   "ricochetSpeed": "Speed",
   "ricochetSpeedActive": "Speed ×{multiplier}",
@@ -223,5 +221,112 @@
   "ricochetHelpLevelsText": "Every board is cut from one of nineteen hand-drawn stencils, auto-centred on the 13-column grid and randomly mirrored. A clear zone above the danger line is guaranteed, so every tile is reachable. Tall compositions may start above the top edge and slide into view one row per turn. From level 8 two stencils usually stack into one bigger composition. Brick HP scales forever with the level, and the exotic tiles unlock as you climb: blast at level 3, pierce at 5, orbs at 7, ramps at 10.",
 
   "ricochetHelpProgressTitle": "Progress",
-  "ricochetHelpProgressText": "Level, score, ball count and the current board are saved automatically — leave mid-level and resume where you left off. Your best score persists across runs. On game over you can retry the level, restored exactly as it looked when the level began, or start over from level 1."
+  "ricochetHelpProgressText": "Level, score, ball count and the current board are saved automatically — leave mid-level and resume where you left off. Your best score persists across runs. On game over you can retry the level, restored exactly as it looked when the level began, or start over from level 1.",
+
+  "commonScore": "Score",
+  "commonBest": "Best",
+  "commonBestScore": "Best: {best}",
+  "@commonBestScore": {
+    "placeholders": {
+      "best": {
+        "type": "int"
+      }
+    }
+  },
+  "commonNewBest": "New best!",
+  "commonNewGame": "New game",
+  "commonGameOver": "Game over",
+  "commonPause": "Pause",
+  "commonResume": "Resume",
+  "commonPaused": "Paused",
+  "commonMute": "Mute",
+  "commonUnmute": "Unmute",
+  "gameName2048": "2048",
+  "gameDescription2048": "Swipe to slide the board, merge equal tiles, and chase a single 2048 out of a grid that keeps filling up.",
+  "twenty48Moves": "Moves",
+  "twenty48Highest": "Highest",
+  "twenty48Undo": "Undo move",
+  "twenty48NoMovesLeft": "No moves left",
+  "twenty48ReachedTile": "Highest tile: {value}",
+  "@twenty48ReachedTile": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "twenty48YouWin": "2048 reached",
+  "twenty48WinSubtitle": "You got there with {score} points. Keep going for a higher tile.",
+  "@twenty48WinSubtitle": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "twenty48KeepPlaying": "Keep playing",
+  "gameNameSnake": "Snake",
+  "gameDescriptionSnake": "Eat, grow, and keep the tail out of your own way as the board fills and the pace never lets up.",
+  "snakeLength": "Length",
+  "snakeSpeed": "Cells/s",
+  "snakeFinalLength": "Final length: {length}",
+  "@snakeFinalLength": {
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "snakeTapToStart": "Swipe or press an arrow key to start",
+  "gameNameMinesweeper": "Minesweeper",
+  "gameDescriptionMinesweeper": "Read the numbers, flag what you can prove, and clear the field without guessing. The first click is always safe.",
+  "minesweeperMines": "Mines",
+  "minesweeperTime": "Time",
+  "minesweeperBeginner": "Beginner",
+  "minesweeperIntermediate": "Intermediate",
+  "minesweeperExpert": "Expert",
+  "minesweeperFlagModeOn": "Flag mode on — tap to flag",
+  "minesweeperFlagModeOff": "Flag mode off — tap to uncover",
+  "minesweeperCleared": "Field cleared",
+  "minesweeperBoom": "Boom",
+  "minesweeperBoomSubtitle": "You hit a mine.",
+  "minesweeperBestTime": "Best: {time}",
+  "@minesweeperBestTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "minesweeperOnLevel": "on {level}",
+  "@minesweeperOnLevel": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "gameNameTetris": "Tetris",
+  "gameDescriptionTetris": "Stack falling blocks into full rows. Modern rules throughout: wall kicks, a hold slot, a ghost drop and a seven-bag shuffle.",
+  "tetrisLines": "Lines",
+  "tetrisLevel": "Level",
+  "tetrisHold": "Hold",
+  "tetrisNext": "Next",
+  "tetrisMoveLeft": "Move left",
+  "tetrisMoveRight": "Move right",
+  "tetrisRotateLeft": "Rotate left",
+  "tetrisRotateRight": "Rotate right",
+  "tetrisSoftDrop": "Soft drop",
+  "tetrisHardDrop": "Hard drop",
+  "tetrisClearedLines": "{lines} lines, level {level}",
+  "@tetrisClearedLines": {
+    "placeholders": {
+      "lines": {
+        "type": "int"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  }
 }

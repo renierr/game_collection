@@ -201,12 +201,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ricochetHowToPlay => 'How to play';
 
   @override
-  String get ricochetMute => 'Mute';
-
-  @override
-  String get ricochetUnmute => 'Unmute';
-
-  @override
   String get ricochetRecall => 'Recall';
 
   @override
@@ -471,4 +465,184 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ricochetHelpProgressText =>
       'Level, score, ball count and the current board are saved automatically — leave mid-level and resume where you left off. Your best score persists across runs. On game over you can retry the level, restored exactly as it looked when the level began, or start over from level 1.';
+
+  @override
+  String get commonScore => 'Score';
+
+  @override
+  String get commonBest => 'Best';
+
+  @override
+  String commonBestScore(int best) {
+    return 'Best: $best';
+  }
+
+  @override
+  String get commonNewBest => 'New best!';
+
+  @override
+  String get commonNewGame => 'New game';
+
+  @override
+  String get commonGameOver => 'Game over';
+
+  @override
+  String get commonPause => 'Pause';
+
+  @override
+  String get commonResume => 'Resume';
+
+  @override
+  String get commonPaused => 'Paused';
+
+  @override
+  String get commonMute => 'Mute';
+
+  @override
+  String get commonUnmute => 'Unmute';
+
+  @override
+  String get gameName2048 => '2048';
+
+  @override
+  String get gameDescription2048 =>
+      'Swipe to slide the board, merge equal tiles, and chase a single 2048 out of a grid that keeps filling up.';
+
+  @override
+  String get twenty48Moves => 'Moves';
+
+  @override
+  String get twenty48Highest => 'Highest';
+
+  @override
+  String get twenty48Undo => 'Undo move';
+
+  @override
+  String get twenty48NoMovesLeft => 'No moves left';
+
+  @override
+  String twenty48ReachedTile(int value) {
+    return 'Highest tile: $value';
+  }
+
+  @override
+  String get twenty48YouWin => '2048 reached';
+
+  @override
+  String twenty48WinSubtitle(int score) {
+    return 'You got there with $score points. Keep going for a higher tile.';
+  }
+
+  @override
+  String get twenty48KeepPlaying => 'Keep playing';
+
+  @override
+  String get gameNameSnake => 'Snake';
+
+  @override
+  String get gameDescriptionSnake =>
+      'Eat, grow, and keep the tail out of your own way as the board fills and the pace never lets up.';
+
+  @override
+  String get snakeLength => 'Length';
+
+  @override
+  String get snakeSpeed => 'Cells/s';
+
+  @override
+  String snakeFinalLength(int length) {
+    return 'Final length: $length';
+  }
+
+  @override
+  String get snakeTapToStart => 'Swipe or press an arrow key to start';
+
+  @override
+  String get gameNameMinesweeper => 'Minesweeper';
+
+  @override
+  String get gameDescriptionMinesweeper =>
+      'Read the numbers, flag what you can prove, and clear the field without guessing. The first click is always safe.';
+
+  @override
+  String get minesweeperMines => 'Mines';
+
+  @override
+  String get minesweeperTime => 'Time';
+
+  @override
+  String get minesweeperBeginner => 'Beginner';
+
+  @override
+  String get minesweeperIntermediate => 'Intermediate';
+
+  @override
+  String get minesweeperExpert => 'Expert';
+
+  @override
+  String get minesweeperFlagModeOn => 'Flag mode on — tap to flag';
+
+  @override
+  String get minesweeperFlagModeOff => 'Flag mode off — tap to uncover';
+
+  @override
+  String get minesweeperCleared => 'Field cleared';
+
+  @override
+  String get minesweeperBoom => 'Boom';
+
+  @override
+  String get minesweeperBoomSubtitle => 'You hit a mine.';
+
+  @override
+  String minesweeperBestTime(String time) {
+    return 'Best: $time';
+  }
+
+  @override
+  String minesweeperOnLevel(String level) {
+    return 'on $level';
+  }
+
+  @override
+  String get gameNameTetris => 'Tetris';
+
+  @override
+  String get gameDescriptionTetris =>
+      'Stack falling blocks into full rows. Modern rules throughout: wall kicks, a hold slot, a ghost drop and a seven-bag shuffle.';
+
+  @override
+  String get tetrisLines => 'Lines';
+
+  @override
+  String get tetrisLevel => 'Level';
+
+  @override
+  String get tetrisHold => 'Hold';
+
+  @override
+  String get tetrisNext => 'Next';
+
+  @override
+  String get tetrisMoveLeft => 'Move left';
+
+  @override
+  String get tetrisMoveRight => 'Move right';
+
+  @override
+  String get tetrisRotateLeft => 'Rotate left';
+
+  @override
+  String get tetrisRotateRight => 'Rotate right';
+
+  @override
+  String get tetrisSoftDrop => 'Soft drop';
+
+  @override
+  String get tetrisHardDrop => 'Hard drop';
+
+  @override
+  String tetrisClearedLines(int lines, int level) {
+    return '$lines lines, level $level';
+  }
 }

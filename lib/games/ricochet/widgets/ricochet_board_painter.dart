@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../engine/geometry.dart';
 import '../engine/ricochet_engine.dart';
 import '../ricochet_colors.dart';
-import 'board_text.dart';
+import '../../../helpers/board_text.dart';
 import 'tile_painter.dart';
 
 /// Draws the whole board in logical board units — the canvas is scaled to fit

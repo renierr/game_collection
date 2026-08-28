@@ -4,6 +4,7 @@ import 'dart:ui' show Color, Offset;
 
 import 'package:flutter/foundation.dart';
 
+import '../../../core/frame_beacon.dart';
 import '../../../services/game_audio.dart';
 import '../ricochet_colors.dart';
 import 'ball.dart';
@@ -75,12 +76,6 @@ class RicochetTuning {
   static const double toastY = Board.launchY - 64;
 }
 
-/// Fires listeners on demand. Two of these let the board repaint every frame
-/// while the HUD only rebuilds when a number it shows actually changed.
-class _Beacon extends ChangeNotifier {
-  void ping() => notifyListeners();
-}
-
 /// The whole Ricochet simulation: board state, physics, scoring and saves.
 ///
 /// Deliberately free of Flutter widgets — it owns no `BuildContext` and builds
@@ -91,8 +86,8 @@ class RicochetEngine {
   final math.Random _random;
   late final LevelGenerator _generator;
 
-  final _Beacon _frames = _Beacon();
-  final _Beacon _hud = _Beacon();
+  final FrameBeacon _frames = FrameBeacon();
+  final FrameBeacon _hud = FrameBeacon();
 
   /// Repaint signal for the board painter — fires every simulated frame.
   Listenable get frames => _frames;

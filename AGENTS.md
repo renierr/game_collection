@@ -47,7 +47,20 @@ Linux.
   a second. Drive painting with a `CustomPainter` whose `repaint:` is a
   frame-level `Listenable`, and give the HUD a *separate* `Listenable` that only
   fires when a displayed value actually changed. `RicochetEngine.frames` and
-  `RicochetEngine.hud` are the reference implementation.
+  `RicochetEngine.hud` are the reference implementation; both come from
+  `FrameBeacon`.
+- **No Frame Clock Where There Is No Motion**: a turn-based game has no
+  `Ticker`. Its engine is a plain `ChangeNotifier` that fires once per move, and
+  a slide or a reveal is an *implicit* animation — a keyed `AnimatedPositioned`,
+  a `TweenAnimationBuilder`, or a short-lived `AnimationController` that stops on
+  its own. `Twenty48Engine` and `MinesweeperEngine` are the reference. Running a
+  60 Hz ticker to animate a board that changes twice a minute is waste.
+- **A Painter, Not Four Hundred Widgets**: past roughly a hundred cells, draw
+  the board with one `CustomPainter` and map pointer positions back through the
+  same fit, rather than building a widget per cell. Minesweeper's expert board is
+  480 squares; 480 elements that each rebuild on any board change cost far more
+  than one repaint. Guard the index — a board widget can be built before its
+  engine has finished loading.
 - **Resolution-Independent Boards**: A game with fixed geometry defines its
   board in logical units (`lib/games/ricochet/engine/geometry.dart`) and scales
   the whole board to fit. Never make physics constants depend on the widget's
@@ -85,10 +98,21 @@ Linux.
   visual elements to `lib/widgets/` immediately. Never copy-paste presentation
   logic between games.
 - **Use Existing Shared Widgets**: Reuse what is in `lib/widgets/` (`GameLayout`,
-  `GameCard`, `ReadableWidth`, `SectionHeader`, `ConfirmActionDialog`,
-  `FloatingBackButton` — check the directory) rather than writing from scratch.
-  Any widget used by two or more games moves to `lib/widgets/`; a game's own
-  private components stay under `lib/games/<name>/widgets/`.
+  `GameHud` + `GameStat`, `GameResultOverlay`, `DirectionalInput`, `GameCard`,
+  `ReadableWidth`, `SectionHeader`, `ConfirmActionDialog`, `FloatingBackButton`
+  — check the directory) rather than writing from scratch. Any widget used by two
+  or more games moves to `lib/widgets/`; a game's own private components stay
+  under `lib/games/<name>/widgets/`.
+- **Use the Shared Game Plumbing**: a game does not hand-roll what `lib/core/`
+  already provides — `FrameClock` (a `Ticker` that hands `update` a delta in
+  seconds), `FrameBeacon` (the repaint / HUD-rebuild signal), `GameStore`
+  (guarded per-game key/value persistence), `GameDirection` (the four grid
+  moves), `DisposeCleanup`. `WakeLockGuard` in `lib/services/` is the same deal
+  for the screen lock. A second copy of any of these is a bug, not a variant.
+- **README Lists Games, It Does Not Explain Them**: the README names each game
+  and its section and stops there. Rules, controls, tile meanings and scoring
+  belong in the game's own in-app help, which is where a player actually looks
+  for them; duplicating them in the README only creates a second copy to drift.
 - **Page Cleanup on Dispose**: Every game page uses the `DisposeCleanup` mixin
   (`lib/core/game_page_state.dart`) and registers all teardown via `onDispose()`
   in `initState` — tickers, timers, wake locks, audio clips, controllers,
@@ -177,7 +201,8 @@ lib/games/<name>/
     geometry.dart
     <name>_engine.dart
     <name>_store.dart      - Persistence, injectable so tests can fake it
-    <name>_strings.dart    - Localised text the engine paints
+    <name>_audio.dart      - Its synthesized clips, built once on page open
+    <name>_strings.dart    - Localised text the engine paints, if any
   widgets/                 - REQUIRED for component widgets: one file each
     <name>_board.dart
     <name>_board_painter.dart

@@ -87,21 +87,39 @@ arrives as a plain value object built by the page — see
 
 ---
 
-## 4. The frame clock
+## 4. The frame clock — if the game needs one
 
-Use a `Ticker` from `SingleTickerProviderStateMixin`, clamp the delta, and hand
-it to the engine:
+**First decide whether it does.** A game whose board only changes when the
+player moves — 2048, Minesweeper — has no frame clock at all. Its engine is a
+plain `ChangeNotifier` that fires once per move, and motion comes from implicit
+animations: a keyed `AnimatedPositioned` for a slide, a `TweenAnimationBuilder`
+for a pop, a short-lived `AnimationController` for a one-off cascade. Running a
+60 Hz ticker to animate a board that changes twice a minute is waste.
+
+For a game that does move on its own, use `FrameClock` from
+`lib/core/frame_clock.dart`. It wraps the `Ticker`, hands `update` a delta in
+seconds, and clamps a stall:
 
 ```dart
-void _onTick(Duration elapsed) {
-  final dt = _lastTick == Duration.zero
-      ? 1 / 60
-      : (elapsed - _lastTick).inMicroseconds / 1e6;
-  _lastTick = elapsed;
-  // A frame longer than a fifth of a second is a stall, not slow motion.
-  _engine.update(dt.clamp(0.0, 0.25));
+late final FrameClock _clock = FrameClock(this, _onTick);
+
+void _onTick(double dt) {
+  _engine.update(dt);
+  _wakeLock.want(_keepScreenAwake && _engine.turnInProgress);
 }
 ```
+
+Start it once the engine has loaded, and register `_clock.dispose` with
+`onDispose`. Do not hand-roll the delta arithmetic — that is what the wrapper is
+for.
+
+### Fixed step, smooth presentation
+
+A game that moves on a grid should step on a **fixed** interval so it plays the
+same on any refresh rate, and expose how far through the current step it is so
+the view can interpolate. `SnakeEngine.stepProgress` is the reference: the
+simulation is integers, the presentation is fractional, and a six-steps-a-second
+snake reads as continuous motion at 60 Hz.
 
 ### Never `setState` per frame
 
@@ -113,6 +131,9 @@ separate `Listenable`s:
 - `hud` — fires only when a displayed value changes. The HUD and action buttons
   wrap themselves in an `AnimatedBuilder` on this.
 
+Both come from `FrameBeacon` (`lib/core/frame_beacon.dart`); do not write
+another one.
+
 ### Background turns
 
 A turn that resolves itself (a volley playing out) must survive the app being
@@ -122,8 +143,11 @@ half-finished turn to a screen lock is indistinguishable from a crash.
 
 ### The wake lock
 
-Hold it only while a turn is resolving, and honour
-`AppState.keepScreenAwake`. Idle aiming must never keep a phone's screen lit.
+Use `WakeLockGuard` (`lib/services/wake_lock_guard.dart`). Call `want(...)` every
+frame with whether a turn is actually resolving; only a change reaches the
+platform. Hold it only while something is moving, and honour
+`AppState.keepScreenAwake` — idle aiming must never keep a phone's screen lit.
+Register `release` with `onDispose`.
 
 ---
 
@@ -153,17 +177,27 @@ row above the board when the room is tall and in a column beside it when
 
 ## 6. Persistence
 
-Wrap `DatabaseService` in a small per-game store so the engine depends on a seam
-it can be handed a fake of:
+Wrap `GameStore` in a small per-game store so the engine depends on a named seam
+it can be handed a fake of. `GameStore` already owns the guarded read/write pair,
+the JSON encoding and the error logging, so the per-game class is only names:
 
 ```dart
 class MyGameStore {
   const MyGameStore();
 
-  Future<int> loadBest() async { /* DatabaseService.instance.getSetting(...) */ }
-  Future<void> saveBest(int value) { /* ... */ }
+  GameStore get _store => GameStore(MyGame.config.id, 'My Game');
+
+  Future<int> loadBest() => _store.readInt('best');
+  Future<void> saveBest(int value) => _store.writeInt('best', value);
+  Future<Map<String, dynamic>?> loadSave() => _store.readJson('save');
+  Future<void> writeSave(Map<String, dynamic> d) => _store.writeJson('save', d);
+  Future<void> clearSave() => _store.delete('save');
 }
 ```
+
+Writes never throw: a save is fire-and-forget from a game loop, and a full disk
+or a database closing under a page teardown must cost one save, not an unhandled
+error.
 
 The engine takes it as an optional constructor argument, defaulting to the real
 one. Tests pass an in-memory implementation and never open a database.
@@ -211,13 +245,24 @@ Register teardown with the `DisposeCleanup` mixin, in `initState`, next to the
 thing that needs it:
 
 ```dart
-onDispose(_ticker.dispose);
-onDispose(_stopBackgroundTicker);
-onDispose(_releaseWakeLock);
+onDispose(_clock.dispose);
+onDispose(_wakeLock.release);
+onDispose(() => unawaited(_engine.saveNow()));
 onDispose(_engine.dispose);
+onDispose(() => unawaited(GameAudio.instance.releaseAll()));
 ```
 
 Never override `dispose()` by hand.
+
+### Build the HUD, do not write one
+
+The readouts-plus-controls bar is `GameHud` with a list of `GameStat`s and
+`GameHudAction`s; it owns the row/column switch and the compact density on a
+narrow phone. The end-of-run panel is `GameResultOverlay`. Swipe and keyboard
+input is `DirectionalInput`, which maps arrows, WASD and swipes onto
+`GameDirection` and takes a map of game-specific keys. Writing a fifth copy of
+any of these is the copy-paste the playbook forbids — and a layout fix in the
+shared one lands for every game at once.
 
 ---
 
@@ -269,11 +314,14 @@ it; a test that pins an exact survivor count is testing the seed, not the rule.
 - [ ] One line added to `GameRegistry.all`
 - [ ] `sectionId` exists in `GameRegistry.sections`
 - [ ] Engine imports no widgets and holds no `BuildContext`
+- [ ] A frame clock only if the game actually moves on its own
 - [ ] Separate `frames` and `hud` listenables; no per-frame `setState`
+- [ ] HUD, result panel and directional input built from the shared widgets
 - [ ] Board scales to any size; input maps back through the same fit
 - [ ] Saves go through an injectable store and are validated on load
 - [ ] Audio registered on open, released on dispose, volume from `AppState`
-- [ ] Wake lock held only while a turn resolves
+- [ ] Wake lock held only while a turn resolves, via `WakeLockGuard`
+- [ ] README lists the game and its section, and explains nothing
 - [ ] All teardown via `onDispose`
 - [ ] Every string in both ARB files; `flutter gen-l10n` run
 - [ ] `dart format ./lib ./test`, `flutter analyze`, `flutter test` all clean

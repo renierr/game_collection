@@ -204,12 +204,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get ricochetHowToPlay => 'Spielanleitung';
 
   @override
-  String get ricochetMute => 'Stumm schalten';
-
-  @override
-  String get ricochetUnmute => 'Ton einschalten';
-
-  @override
   String get ricochetRecall => 'Zurückrufen';
 
   @override
@@ -475,4 +469,184 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get ricochetHelpProgressText =>
       'Level, Punkte, Ballanzahl und das aktuelle Feld werden automatisch gespeichert — brich mitten im Level ab und mach später dort weiter. Dein Rekord bleibt über alle Durchläufe erhalten. Bei Spielende kannst du das Level wiederholen, exakt so wiederhergestellt, wie es zu Levelbeginn aussah, oder von Level 1 neu beginnen.';
+
+  @override
+  String get commonScore => 'Punkte';
+
+  @override
+  String get commonBest => 'Rekord';
+
+  @override
+  String commonBestScore(int best) {
+    return 'Rekord: $best';
+  }
+
+  @override
+  String get commonNewBest => 'Neuer Rekord!';
+
+  @override
+  String get commonNewGame => 'Neues Spiel';
+
+  @override
+  String get commonGameOver => 'Spiel vorbei';
+
+  @override
+  String get commonPause => 'Pause';
+
+  @override
+  String get commonResume => 'Weiter';
+
+  @override
+  String get commonPaused => 'Pausiert';
+
+  @override
+  String get commonMute => 'Ton aus';
+
+  @override
+  String get commonUnmute => 'Ton an';
+
+  @override
+  String get gameName2048 => '2048';
+
+  @override
+  String get gameDescription2048 =>
+      'Wische, um das Feld zu verschieben, verschmelze gleiche Steine und jage die 2048 aus einem Raster, das immer voller wird.';
+
+  @override
+  String get twenty48Moves => 'Züge';
+
+  @override
+  String get twenty48Highest => 'Höchster';
+
+  @override
+  String get twenty48Undo => 'Zug zurücknehmen';
+
+  @override
+  String get twenty48NoMovesLeft => 'Keine Züge mehr';
+
+  @override
+  String twenty48ReachedTile(int value) {
+    return 'Höchster Stein: $value';
+  }
+
+  @override
+  String get twenty48YouWin => '2048 erreicht';
+
+  @override
+  String twenty48WinSubtitle(int score) {
+    return 'Geschafft mit $score Punkten. Spiel weiter für einen höheren Stein.';
+  }
+
+  @override
+  String get twenty48KeepPlaying => 'Weiterspielen';
+
+  @override
+  String get gameNameSnake => 'Snake';
+
+  @override
+  String get gameDescriptionSnake =>
+      'Fressen, wachsen und dem eigenen Schwanz ausweichen, während das Feld voller wird und das Tempo nie nachlässt.';
+
+  @override
+  String get snakeLength => 'Länge';
+
+  @override
+  String get snakeSpeed => 'Felder/s';
+
+  @override
+  String snakeFinalLength(int length) {
+    return 'Endlänge: $length';
+  }
+
+  @override
+  String get snakeTapToStart => 'Wischen oder Pfeiltaste drücken zum Start';
+
+  @override
+  String get gameNameMinesweeper => 'Minesweeper';
+
+  @override
+  String get gameDescriptionMinesweeper =>
+      'Lies die Zahlen, markiere, was du beweisen kannst, und räume das Feld ohne zu raten. Der erste Klick ist immer sicher.';
+
+  @override
+  String get minesweeperMines => 'Minen';
+
+  @override
+  String get minesweeperTime => 'Zeit';
+
+  @override
+  String get minesweeperBeginner => 'Anfänger';
+
+  @override
+  String get minesweeperIntermediate => 'Fortgeschritten';
+
+  @override
+  String get minesweeperExpert => 'Profi';
+
+  @override
+  String get minesweeperFlagModeOn => 'Flaggenmodus an — Tippen setzt Flagge';
+
+  @override
+  String get minesweeperFlagModeOff => 'Flaggenmodus aus — Tippen deckt auf';
+
+  @override
+  String get minesweeperCleared => 'Feld geräumt';
+
+  @override
+  String get minesweeperBoom => 'Boom';
+
+  @override
+  String get minesweeperBoomSubtitle => 'Du hast eine Mine getroffen.';
+
+  @override
+  String minesweeperBestTime(String time) {
+    return 'Rekord: $time';
+  }
+
+  @override
+  String minesweeperOnLevel(String level) {
+    return 'auf $level';
+  }
+
+  @override
+  String get gameNameTetris => 'Tetris';
+
+  @override
+  String get gameDescriptionTetris =>
+      'Staple fallende Blöcke zu vollen Reihen. Durchgehend moderne Regeln: Wall Kicks, Halte-Slot, Schattenvorschau und Sieben-Bag-Mischung.';
+
+  @override
+  String get tetrisLines => 'Reihen';
+
+  @override
+  String get tetrisLevel => 'Level';
+
+  @override
+  String get tetrisHold => 'Halten';
+
+  @override
+  String get tetrisNext => 'Nächste';
+
+  @override
+  String get tetrisMoveLeft => 'Nach links';
+
+  @override
+  String get tetrisMoveRight => 'Nach rechts';
+
+  @override
+  String get tetrisRotateLeft => 'Links drehen';
+
+  @override
+  String get tetrisRotateRight => 'Rechts drehen';
+
+  @override
+  String get tetrisSoftDrop => 'Sanft fallen';
+
+  @override
+  String get tetrisHardDrop => 'Hart fallen';
+
+  @override
+  String tetrisClearedLines(int lines, int level) {
+    return '$lines Reihen, Level $level';
+  }
 }

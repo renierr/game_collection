@@ -452,18 +452,6 @@ abstract class AppLocalizations {
   /// **'How to play'**
   String get ricochetHowToPlay;
 
-  /// No description provided for @ricochetMute.
-  ///
-  /// In en, this message translates to:
-  /// **'Mute'**
-  String get ricochetMute;
-
-  /// No description provided for @ricochetUnmute.
-  ///
-  /// In en, this message translates to:
-  /// **'Unmute'**
-  String get ricochetUnmute;
-
   /// No description provided for @ricochetRecall.
   ///
   /// In en, this message translates to:
@@ -907,6 +895,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Level, score, ball count and the current board are saved automatically — leave mid-level and resume where you left off. Your best score persists across runs. On game over you can retry the level, restored exactly as it looked when the level began, or start over from level 1.'**
   String get ricochetHelpProgressText;
+
+  /// No description provided for @commonScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get commonScore;
+
+  /// No description provided for @commonBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get commonBest;
+
+  /// No description provided for @commonBestScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Best: {best}'**
+  String commonBestScore(int best);
+
+  /// No description provided for @commonNewBest.
+  ///
+  /// In en, this message translates to:
+  /// **'New best!'**
+  String get commonNewBest;
+
+  /// No description provided for @commonNewGame.
+  ///
+  /// In en, this message translates to:
+  /// **'New game'**
+  String get commonNewGame;
+
+  /// No description provided for @commonGameOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Game over'**
+  String get commonGameOver;
+
+  /// No description provided for @commonPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get commonPause;
+
+  /// No description provided for @commonResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get commonResume;
+
+  /// No description provided for @commonPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get commonPaused;
+
+  /// No description provided for @commonMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get commonMute;
+
+  /// No description provided for @commonUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get commonUnmute;
+
+  /// No description provided for @gameName2048.
+  ///
+  /// In en, this message translates to:
+  /// **'2048'**
+  String get gameName2048;
+
+  /// No description provided for @gameDescription2048.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to slide the board, merge equal tiles, and chase a single 2048 out of a grid that keeps filling up.'**
+  String get gameDescription2048;
+
+  /// No description provided for @twenty48Moves.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves'**
+  String get twenty48Moves;
+
+  /// No description provided for @twenty48Highest.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest'**
+  String get twenty48Highest;
+
+  /// No description provided for @twenty48Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo move'**
+  String get twenty48Undo;
+
+  /// No description provided for @twenty48NoMovesLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'No moves left'**
+  String get twenty48NoMovesLeft;
+
+  /// No description provided for @twenty48ReachedTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest tile: {value}'**
+  String twenty48ReachedTile(int value);
+
+  /// No description provided for @twenty48YouWin.
+  ///
+  /// In en, this message translates to:
+  /// **'2048 reached'**
+  String get twenty48YouWin;
+
+  /// No description provided for @twenty48WinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You got there with {score} points. Keep going for a higher tile.'**
+  String twenty48WinSubtitle(int score);
+
+  /// No description provided for @twenty48KeepPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep playing'**
+  String get twenty48KeepPlaying;
+
+  /// No description provided for @gameNameSnake.
+  ///
+  /// In en, this message translates to:
+  /// **'Snake'**
+  String get gameNameSnake;
+
+  /// No description provided for @gameDescriptionSnake.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat, grow, and keep the tail out of your own way as the board fills and the pace never lets up.'**
+  String get gameDescriptionSnake;
+
+  /// No description provided for @snakeLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get snakeLength;
+
+  /// No description provided for @snakeSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cells/s'**
+  String get snakeSpeed;
+
+  /// No description provided for @snakeFinalLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Final length: {length}'**
+  String snakeFinalLength(int length);
+
+  /// No description provided for @snakeTapToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe or press an arrow key to start'**
+  String get snakeTapToStart;
+
+  /// No description provided for @gameNameMinesweeper.
+  ///
+  /// In en, this message translates to:
+  /// **'Minesweeper'**
+  String get gameNameMinesweeper;
+
+  /// No description provided for @gameDescriptionMinesweeper.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the numbers, flag what you can prove, and clear the field without guessing. The first click is always safe.'**
+  String get gameDescriptionMinesweeper;
+
+  /// No description provided for @minesweeperMines.
+  ///
+  /// In en, this message translates to:
+  /// **'Mines'**
+  String get minesweeperMines;
+
+  /// No description provided for @minesweeperTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get minesweeperTime;
+
+  /// No description provided for @minesweeperBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get minesweeperBeginner;
+
+  /// No description provided for @minesweeperIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get minesweeperIntermediate;
+
+  /// No description provided for @minesweeperExpert.
+  ///
+  /// In en, this message translates to:
+  /// **'Expert'**
+  String get minesweeperExpert;
+
+  /// No description provided for @minesweeperFlagModeOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Flag mode on — tap to flag'**
+  String get minesweeperFlagModeOn;
+
+  /// No description provided for @minesweeperFlagModeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Flag mode off — tap to uncover'**
+  String get minesweeperFlagModeOff;
+
+  /// No description provided for @minesweeperCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Field cleared'**
+  String get minesweeperCleared;
+
+  /// No description provided for @minesweeperBoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Boom'**
+  String get minesweeperBoom;
+
+  /// No description provided for @minesweeperBoomSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You hit a mine.'**
+  String get minesweeperBoomSubtitle;
+
+  /// No description provided for @minesweeperBestTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Best: {time}'**
+  String minesweeperBestTime(String time);
+
+  /// No description provided for @minesweeperOnLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'on {level}'**
+  String minesweeperOnLevel(String level);
+
+  /// No description provided for @gameNameTetris.
+  ///
+  /// In en, this message translates to:
+  /// **'Tetris'**
+  String get gameNameTetris;
+
+  /// No description provided for @gameDescriptionTetris.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack falling blocks into full rows. Modern rules throughout: wall kicks, a hold slot, a ghost drop and a seven-bag shuffle.'**
+  String get gameDescriptionTetris;
+
+  /// No description provided for @tetrisLines.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines'**
+  String get tetrisLines;
+
+  /// No description provided for @tetrisLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get tetrisLevel;
+
+  /// No description provided for @tetrisHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold'**
+  String get tetrisHold;
+
+  /// No description provided for @tetrisNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get tetrisNext;
+
+  /// No description provided for @tetrisMoveLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Move left'**
+  String get tetrisMoveLeft;
+
+  /// No description provided for @tetrisMoveRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Move right'**
+  String get tetrisMoveRight;
+
+  /// No description provided for @tetrisRotateLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate left'**
+  String get tetrisRotateLeft;
+
+  /// No description provided for @tetrisRotateRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate right'**
+  String get tetrisRotateRight;
+
+  /// No description provided for @tetrisSoftDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft drop'**
+  String get tetrisSoftDrop;
+
+  /// No description provided for @tetrisHardDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard drop'**
+  String get tetrisHardDrop;
+
+  /// No description provided for @tetrisClearedLines.
+  ///
+  /// In en, this message translates to:
+  /// **'{lines} lines, level {level}'**
+  String tetrisClearedLines(int lines, int level);
 }
 
 class _AppLocalizationsDelegate
