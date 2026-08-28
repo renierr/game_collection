@@ -35,10 +35,10 @@ class TetrisControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
+        spacing: 4,
+        runSpacing: 4,
         alignment: WrapAlignment.center,
         children: [
           _Key(
@@ -104,17 +104,17 @@ class _Key extends StatelessWidget {
       child: Material(
         color: theme.colorScheme.surface.withValues(alpha: 0.55),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           side: BorderSide(color: TetrisColors.wall.withValues(alpha: 0.6)),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             child: Icon(
               icon,
-              size: 22,
+              size: 20,
               color: onPressed == null
                   ? theme.colorScheme.onSurface.withValues(alpha: 0.3)
                   : (accent ?? theme.colorScheme.onSurface),

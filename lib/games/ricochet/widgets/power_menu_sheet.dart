@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../providers/app_state.dart';
 import '../engine/ricochet_engine.dart';
 import '../ricochet_colors.dart';
 
@@ -75,13 +77,36 @@ class PowerMenuSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  onHowToPlay();
-                },
-                icon: const Icon(Icons.menu_book_outlined),
-                label: Text(l10n.ricochetHowToPlay),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onHowToPlay();
+                      },
+                      icon: const Icon(Icons.menu_book_outlined),
+                      label: Text(l10n.ricochetHowToPlay),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Consumer<AppState>(
+                      builder: (context, appState, _) {
+                        final sound = appState.soundEnabled;
+                        return OutlinedButton.icon(
+                          onPressed: () => appState.setSoundEnabled(!sound),
+                          icon: Icon(
+                            sound ? Icons.volume_up : Icons.volume_off,
+                          ),
+                          label: Text(
+                            sound ? l10n.commonMute : l10n.commonUnmute,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

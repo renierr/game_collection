@@ -101,24 +101,24 @@ class _Twenty48PageState extends State<Twenty48Page> with DisposeCleanup {
                 GameStat(
                   label: l10n.commonScore,
                   value: '${_engine.score}',
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.commonBest,
                   value: '${_engine.best}',
                   color: Twenty48Colors.best,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.twenty48Moves,
                   value: '${_engine.moves}',
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.twenty48Highest,
                   value: '${_engine.highestValue}',
                   color: Twenty48Colors.score,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
               ],
               actions: [
@@ -145,19 +145,20 @@ class _Twenty48PageState extends State<Twenty48Page> with DisposeCleanup {
               ],
             );
 
-            final board = Padding(
-              // A 4×4 grid does not benefit from a whole desktop window, so
-              // the board is capped and centred while the HUD keeps the room.
-              padding: const EdgeInsets.all(12),
-              child: Center(
+            final board = Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
+                  constraints: const BoxConstraints(
+                    maxWidth: 500,
+                    maxHeight: 500,
+                  ),
                   child: Stack(
                     children: [
-                      DirectionalInput(
-                        onDirection: _move,
-                        child: Twenty48Board(engine: _engine),
-                      ),
+                      Twenty48Board(engine: _engine),
                       Positioned.fill(
                         child: _Overlay(
                           engine: _engine,
@@ -177,7 +178,9 @@ class _Twenty48PageState extends State<Twenty48Page> with DisposeCleanup {
             if (constraints.canSplit) {
               return Row(
                 children: [
-                  Expanded(child: board),
+                  Expanded(
+                    child: DirectionalInput(onDirection: _move, child: board),
+                  ),
                   SizedBox(
                     width: math.min(220, constraints.maxWidth * 0.28),
                     child: hud,
@@ -187,10 +190,10 @@ class _Twenty48PageState extends State<Twenty48Page> with DisposeCleanup {
             }
             return Column(
               children: [
-                // Leave room for the floating back button in the top-left.
-                const SizedBox(height: 44),
                 hud,
-                Expanded(child: board),
+                Expanded(
+                  child: DirectionalInput(onDirection: _move, child: board),
+                ),
               ],
             );
           },

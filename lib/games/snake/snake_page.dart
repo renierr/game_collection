@@ -118,23 +118,23 @@ class _SnakePageState extends State<SnakePage>
                   label: l10n.commonScore,
                   value: '${_engine.score}',
                   color: SnakeColors.score,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.commonBest,
                   value: '${_engine.best}',
                   color: SnakeColors.best,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.snakeLength,
                   value: '${_engine.length}',
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.snakeSpeed,
                   value: _engine.speed.toStringAsFixed(1),
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
               ],
               actions: [
@@ -214,8 +214,6 @@ class _SnakePageState extends State<SnakePage>
           }
           return Column(
             children: [
-              // Leave room for the floating back button in the top-left.
-              const SizedBox(height: 44),
               hud,
               Expanded(child: board),
             ],

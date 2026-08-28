@@ -110,19 +110,19 @@ class _MinesweeperPageState extends State<MinesweeperPage>
                   label: l10n.minesweeperMines,
                   value: '${_engine.flagsLeft}',
                   color: MinesweeperColors.flag,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.minesweeperTime,
                   value: _formatTime(_engine.elapsedSeconds),
                   color: MinesweeperColors.time,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
                 GameStat(
                   label: l10n.commonBest,
                   value: best == null ? '—' : _formatTime(best),
                   color: MinesweeperColors.best,
-                  centered: constraints.canSplit,
+                  centered: true,
                 ),
               ],
               actions: [
@@ -207,8 +207,6 @@ class _MinesweeperPageState extends State<MinesweeperPage>
             }
             return Column(
               children: [
-                // Leave room for the floating back button in the top-left.
-                const SizedBox(height: 44),
                 hud,
                 Expanded(child: board),
                 picker,

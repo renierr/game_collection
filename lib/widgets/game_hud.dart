@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'game_stat.dart';
 
 /// One control button in a [GameHud].
@@ -27,50 +28,88 @@ class GameHudAction {
 
 /// The readouts-plus-controls bar every game page wears.
 ///
-/// A row above the board when the room is tall, a column beside it when it is
-/// wide — the same stats either way, so nothing is hidden on a phone in
-/// landscape or on a desktop window. Below [_crampedWidth] the bar trades gaps
-/// and tap-target padding for room rather than clipping a score.
+/// A 2-line layout on compact/narrow displays (back + controls on top, stats below),
+/// a 1-line row on wide desktop displays, and a column beside the board in split layout.
 class GameHud extends StatelessWidget {
   final List<GameStat> stats;
   final List<GameHudAction> actions;
   final bool vertical;
+  final bool showBackButton;
+  final VoidCallback? onBack;
 
   const GameHud({
     super.key,
     required this.stats,
     required this.actions,
     required this.vertical,
+    this.showBackButton = true,
+    this.onBack,
   });
 
-  /// Four readouts beside four buttons is a tight fit on a phone; this is the
-  /// width where that stops being comfortable, not a device tier.
-  static const double _crampedWidth = 460;
+  /// Width below which the HUD splits into 2 lines rather than crowding a single row.
+  static const double _compactWidth = 560;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final canPop = showBackButton && Navigator.of(context).canPop();
+    final backButton = canPop
+        ? IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: l10n.commonBack,
+            visualDensity: VisualDensity.compact,
+            iconSize: 22,
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            onPressed: onBack ?? () => Navigator.of(context).maybePop(),
+          )
+        : const SizedBox.shrink();
+
+    final controls = _Controls(actions: actions, vertical: vertical);
+
+    if (vertical) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (canPop)
+              Align(alignment: Alignment.centerLeft, child: backButton),
+            const SizedBox(height: 8),
+            for (final stat in stats)
+              Padding(padding: const EdgeInsets.only(bottom: 14), child: stat),
+            const Spacer(),
+            controls,
+          ],
+        ),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cramped = constraints.maxWidth < _crampedWidth;
-        final controls = _Controls(
-          actions: actions,
-          vertical: vertical,
-          compact: cramped,
-        );
+        final isCompact = constraints.maxWidth < _compactWidth;
 
-        if (vertical) {
+        if (isCompact) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            padding: const EdgeInsets.fromLTRB(8, 2, 8, 4),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                for (final stat in stats)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: stat,
-                  ),
-                const Spacer(),
-                controls,
+                Row(
+                  children: [if (canPop) backButton, const Spacer(), controls],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    for (final stat in stats)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: stat,
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
           );
@@ -80,21 +119,21 @@ class GameHud extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
           child: Row(
             children: [
-              // The readouts take whatever the buttons leave and share it
-              // evenly; each one scales its own text down to fit its slot.
+              if (canPop) ...[backButton, const SizedBox(width: 8)],
               Expanded(
                 child: Row(
                   children: [
                     for (final stat in stats)
-                      Flexible(
+                      Expanded(
                         child: Padding(
-                          padding: EdgeInsets.only(right: cramped ? 8 : 18),
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: stat,
                         ),
                       ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               controls,
             ],
           ),
@@ -107,20 +146,16 @@ class GameHud extends StatelessWidget {
 class _Controls extends StatelessWidget {
   final List<GameHudAction> actions;
   final bool vertical;
-  final bool compact;
 
-  const _Controls({
-    required this.actions,
-    required this.vertical,
-    required this.compact,
-  });
+  const _Controls({required this.actions, required this.vertical});
 
   @override
   Widget build(BuildContext context) {
-    // Wrap rather than Row: in the side column the buttons may need two lines,
-    // and wrapping beats shrinking them further.
     return Wrap(
       alignment: vertical ? WrapAlignment.center : WrapAlignment.end,
+      spacing: 2,
+      runSpacing: 2,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         for (final action in actions)
           IconButton(
@@ -134,12 +169,10 @@ class _Controls extends StatelessWidget {
             color: action.color,
             tooltip: action.tooltip,
             onPressed: action.onPressed,
-            iconSize: compact ? 20 : 24,
-            padding: compact ? const EdgeInsets.all(5) : null,
-            visualDensity: compact ? VisualDensity.compact : null,
-            constraints: compact
-                ? const BoxConstraints(minWidth: 34, minHeight: 34)
-                : null,
+            iconSize: 22,
+            padding: const EdgeInsets.all(6),
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
       ],
     );

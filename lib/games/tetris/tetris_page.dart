@@ -139,23 +139,23 @@ class _TetrisPageState extends State<TetrisPage>
                     label: l10n.commonScore,
                     value: '${_engine.score}',
                     color: TetrisColors.score,
-                    centered: constraints.canSplit,
+                    centered: true,
                   ),
                   GameStat(
                     label: l10n.commonBest,
                     value: '${_engine.best}',
                     color: TetrisColors.best,
-                    centered: constraints.canSplit,
+                    centered: true,
                   ),
                   GameStat(
                     label: l10n.tetrisLines,
                     value: '${_engine.lines}',
-                    centered: constraints.canSplit,
+                    centered: true,
                   ),
                   GameStat(
                     label: l10n.tetrisLevel,
                     value: '${_engine.level}',
-                    centered: constraints.canSplit,
+                    centered: true,
                   ),
                 ],
                 actions: [
@@ -187,21 +187,27 @@ class _TetrisPageState extends State<TetrisPage>
               ),
             );
 
-            final board = Center(
-              child: Stack(
-                children: [
-                  TetrisBoard(engine: _engine),
-                  Positioned.fill(
-                    child: AnimatedBuilder(
-                      animation: _engine.hud,
-                      builder: (context, _) => _TetrisOverlay(
-                        engine: _engine,
-                        onNewGame: _engine.newGame,
-                        onResume: _engine.togglePause,
+            final boardWidget = Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 380,
+                  maxHeight: 720,
+                ),
+                child: Stack(
+                  children: [
+                    TetrisBoard(engine: _engine),
+                    Positioned.fill(
+                      child: AnimatedBuilder(
+                        animation: _engine.hud,
+                        builder: (context, _) => _TetrisOverlay(
+                          engine: _engine,
+                          onNewGame: _engine.newGame,
+                          onResume: _engine.togglePause,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
 
@@ -225,7 +231,7 @@ class _TetrisPageState extends State<TetrisPage>
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(8),
-                      child: board,
+                      child: boardWidget,
                     ),
                   ),
                   SizedBox(
@@ -243,11 +249,34 @@ class _TetrisPageState extends State<TetrisPage>
             }
             return Column(
               children: [
-                // Leave room for the floating back button in the top-left.
-                const SizedBox(height: 44),
                 hud,
-                TetrisSidePanel(engine: _engine, vertical: false),
-                Expanded(child: board),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 8,
+                            left: 4,
+                            right: 4,
+                          ),
+                          child: TetrisHoldSlot(engine: _engine),
+                        ),
+                        Expanded(child: boardWidget),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 8,
+                            left: 4,
+                            right: 4,
+                          ),
+                          child: TetrisNextSlot(engine: _engine),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 controls,
               ],
             );

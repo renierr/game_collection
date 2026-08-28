@@ -24,10 +24,9 @@ class RicochetActionBar extends StatelessWidget {
         final active = engine.volleyActive;
         final boosted = engine.speedMultiplier > 1;
         return Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _ActionButton(
                 tooltip: l10n.ricochetRecall,
@@ -80,7 +79,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tint = highlighted ? color : Colors.white;
-    final glyph = Icon(icon, size: 24, color: tint);
+    final glyph = Icon(icon, size: 22, color: tint);
     return AnimatedOpacity(
       opacity: enabled || highlighted ? 1 : 0.32,
       duration: const Duration(milliseconds: 180),
@@ -96,7 +95,7 @@ class _ActionButton extends StatelessWidget {
             customBorder: const CircleBorder(),
             onTap: enabled ? onPressed : null,
             child: Padding(
-              padding: const EdgeInsets.all(13),
+              padding: const EdgeInsets.all(9),
               child: badge == null
                   ? glyph
                   : Badge(

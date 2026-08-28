@@ -21,7 +21,7 @@ class GameLayout extends StatelessWidget {
     required this.child,
     this.fullscreen = true,
     this.actions,
-    this.showFloatingBackButton = true,
+    this.showFloatingBackButton = false,
     this.backgroundColor,
   });
 

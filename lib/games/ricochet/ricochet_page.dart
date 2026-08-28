@@ -301,6 +301,7 @@ class _RicochetPageState extends State<RicochetPage>
     return GameLayout(
       title: l10n.gameNameRicochet,
       backgroundColor: RicochetColors.page,
+      showFloatingBackButton: false,
       // Autofocus so a desktop player can aim the instant the page opens,
       // without clicking the board first. The node sits above the HUD, so a
       // button taking the focus keeps [hasFocus] true and keys keep working.
@@ -314,24 +315,14 @@ class _RicochetPageState extends State<RicochetPage>
             final hud = RicochetHud(
               engine: _engine,
               vertical: constraints.canSplit,
-              soundEnabled: appState.soundEnabled,
               onOpenPowers: _openPowerMenu,
               onRestartLevel: () => unawaited(_restart(_engine.retryLevel)),
-              onOpenHelp: _openHelp,
-              onToggleSound: () =>
-                  appState.setSoundEnabled(!appState.soundEnabled),
             );
 
             final board = Stack(
               fit: StackFit.passthrough,
               children: [
                 RicochetBoard(engine: _engine),
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: RicochetActionBar(engine: _engine),
-                  ),
-                ),
                 Positioned.fill(
                   child: AnimatedBuilder(
                     animation: _engine.hud,
@@ -377,17 +368,21 @@ class _RicochetPageState extends State<RicochetPage>
                   Expanded(child: Center(child: board)),
                   SizedBox(
                     width: math.min(220, constraints.maxWidth * 0.28),
-                    child: hud,
+                    child: Column(
+                      children: [
+                        Expanded(child: hud),
+                        RicochetActionBar(engine: _engine),
+                      ],
+                    ),
                   ),
                 ],
               );
             }
             return Column(
               children: [
-                // Leave room for the floating back button in the top-left.
-                const SizedBox(height: 44),
                 hud,
                 Expanded(child: Center(child: board)),
+                RicochetActionBar(engine: _engine),
               ],
             );
           },

@@ -5,11 +5,7 @@ import '../engine/tetris_engine.dart';
 import '../tetris_colors.dart';
 import 'tetris_piece_preview.dart';
 
-/// The hold slot and the next queue.
-///
-/// A column beside the board when there is room, a single row above it when
-/// there is not — the queue is not optional information, so it never gets
-/// dropped on a small screen, only reflowed.
+/// The hold slot and the next queue combined.
 class TetrisSidePanel extends StatelessWidget {
   final TetrisEngine engine;
   final bool vertical;
@@ -22,51 +18,94 @@ class TetrisSidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (vertical) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TetrisHoldSlot(engine: engine, vertical: true, cell: 16),
+            const SizedBox(height: 12),
+            TetrisNextSlot(engine: engine, vertical: true, cell: 16),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TetrisHoldSlot(engine: engine, vertical: false, cell: 12),
+          const SizedBox(width: 14),
+          Expanded(
+            child: TetrisNextSlot(engine: engine, vertical: false, cell: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Standalone Hold slot widget.
+class TetrisHoldSlot extends StatelessWidget {
+  final TetrisEngine engine;
+  final bool vertical;
+  final double cell;
+
+  const TetrisHoldSlot({
+    super.key,
+    required this.engine,
+    this.vertical = true,
+    this.cell = 12,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AnimatedBuilder(
       animation: engine.hud,
-      builder: (context, _) {
-        final hold = _Slot(
-          label: l10n.tetrisHold,
-          vertical: vertical,
-          children: [
-            TetrisPiecePreview(
-              kind: engine.hold,
-              cell: vertical ? 16 : 12,
-              dimmed: engine.holdUsed,
-            ),
-          ],
-        );
-        final next = _Slot(
-          label: l10n.tetrisNext,
-          vertical: vertical,
-          children: [
-            for (final kind in engine.preview)
-              TetrisPiecePreview(kind: kind, cell: vertical ? 16 : 11),
-          ],
-        );
-
-        if (vertical) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [hold, const SizedBox(height: 12), next],
-            ),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              hold,
-              const SizedBox(width: 14),
-              Expanded(child: next),
-            ],
+      builder: (context, _) => _Slot(
+        label: l10n.tetrisHold,
+        vertical: vertical,
+        children: [
+          TetrisPiecePreview(
+            kind: engine.hold,
+            cell: cell,
+            dimmed: engine.holdUsed,
           ),
-        );
-      },
+        ],
+      ),
+    );
+  }
+}
+
+/// Standalone Next queue widget.
+class TetrisNextSlot extends StatelessWidget {
+  final TetrisEngine engine;
+  final bool vertical;
+  final double cell;
+
+  const TetrisNextSlot({
+    super.key,
+    required this.engine,
+    this.vertical = true,
+    this.cell = 11,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AnimatedBuilder(
+      animation: engine.hud,
+      builder: (context, _) => _Slot(
+        label: l10n.tetrisNext,
+        vertical: vertical,
+        children: [
+          for (final kind in engine.preview)
+            TetrisPiecePreview(kind: kind, cell: cell),
+        ],
+      ),
     );
   }
 }
@@ -97,8 +136,6 @@ class _Slot extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        // Wrap rather than a fixed Row or Column: three previews beside a hold
-        // slot is more than a narrow phone can fit on one line.
         Wrap(
           spacing: 4,
           runSpacing: 2,
