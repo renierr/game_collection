@@ -25,6 +25,12 @@ class GameResultOverlay extends StatelessWidget {
   /// back once the panel closes.
   final bool autofocusPrimary;
 
+  /// Focus for the primary action. A page that holds keyboard focus of its own
+  /// must hand it over here when the panel opens: `autofocus` is discarded when
+  /// the surrounding scope already has a focused node, so a game driving its
+  /// board from a focus node would otherwise leave these buttons unreachable.
+  final FocusNode? primaryFocusNode;
+
   /// Painted behind the panel at high opacity, normally the game's own board
   /// colour so the overlay reads as part of the board rather than app chrome.
   final Color scrimColor;
@@ -39,6 +45,7 @@ class GameResultOverlay extends StatelessWidget {
     required this.scrimColor,
     this.footnote,
     this.autofocusPrimary = false,
+    this.primaryFocusNode,
   });
 
   @override
@@ -108,6 +115,7 @@ class GameResultOverlay extends StatelessWidget {
                     child: i == 0
                         ? FilledButton.icon(
                             autofocus: autofocusPrimary,
+                            focusNode: primaryFocusNode,
                             onPressed: actions[i].onPressed,
                             icon: Icon(actions[i].icon),
                             label: Text(actions[i].label),

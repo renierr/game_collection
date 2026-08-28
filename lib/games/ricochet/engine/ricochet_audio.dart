@@ -41,10 +41,10 @@ class RicochetSfx {
           // body and none of the click.
           WavBuilder.noise(
             seconds: 0.03,
-            gain: 0.12,
+            gain: 0.18,
             decay: 14,
             highPassHz: 800,
-            lowPassHz: 4500,
+            lowPassHz: 3000,
             seed: 0x51 + i,
           ),
           WavBuilder.tone(
@@ -53,7 +53,7 @@ class RicochetSfx {
             frequency: 300 + 120 * i / (hitVariants - 1),
             seconds: 0.045,
             waveform: Waveform.triangle,
-            gain: 0.10,
+            gain: 0.40,
             slideHz: -170,
             decay: 13,
           ),
@@ -63,17 +63,17 @@ class RicochetSfx {
         // longer — the difference between a tile taking a hit and coming apart.
         WavBuilder.noise(
           seconds: 0.14,
-          gain: 0.17,
+          gain: 0.22,
           decay: 9,
           highPassHz: 900,
-          lowPassHz: 5200,
+          lowPassHz: 4200,
           seed: 0xbeef,
         ),
         WavBuilder.tone(
           frequency: 620,
           seconds: 0.11,
           waveform: Waveform.triangle,
-          gain: 0.19,
+          gain: 0.38,
           slideHz: -330,
           decay: 9,
         ),
@@ -138,13 +138,13 @@ class RicochetSfx {
           frequency: 340,
           seconds: 0.09,
           waveform: Waveform.triangle,
-          gain: 0.18,
+          gain: 0.42,
           slideHz: 220,
         ),
         // A breath of air behind the chirp, so firing reads as a release.
         WavBuilder.noise(
           seconds: 0.07,
-          gain: 0.07,
+          gain: 0.10,
           decay: 11,
           highPassHz: 1400,
           seed: 0x1a,

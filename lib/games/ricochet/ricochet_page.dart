@@ -66,6 +66,11 @@ class _RicochetPageState extends State<RicochetPage>
   /// provider lookup.
   bool _keepScreenAwake = true;
 
+  /// The game-over panel's primary button, so the run's end can hand the
+  /// keyboard over and taking it back on restart is one call.
+  final FocusNode _overlayFocus = FocusNode(debugLabel: 'ricochet-over');
+  bool _wasOver = false;
+
   @override
   void initState() {
     super.initState();
@@ -74,11 +79,28 @@ class _RicochetPageState extends State<RicochetPage>
     onDispose(() => WidgetsBinding.instance.removeObserver(this));
     onDispose(_ticker.dispose);
     onDispose(_keyboard.dispose);
+    onDispose(_overlayFocus.dispose);
+    _engine.hud.addListener(_syncOverlayFocus);
+    onDispose(() => _engine.hud.removeListener(_syncOverlayFocus));
     onDispose(_stopBackgroundTicker);
     onDispose(_releaseWakeLock);
     onDispose(_engine.dispose);
     onDispose(() => unawaited(GameAudio.instance.releaseAll()));
     unawaited(_bootstrap());
+  }
+
+  /// Moves the keyboard between the board and the game-over panel. The panel
+  /// is built by an [AnimatedBuilder] on the HUD beacon, so the page's own
+  /// [Focus] never rebuilds with the run's end and cannot yield focus itself.
+  void _syncOverlayFocus() {
+    final over = _engine.mode == GameMode.over;
+    if (over == _wasOver) return;
+    _wasOver = over;
+    // The panel is only in the tree after this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      (over ? _overlayFocus : _keyboard).requestFocus();
+    });
   }
 
   Future<void> _bootstrap() async {
@@ -307,6 +329,7 @@ class _RicochetPageState extends State<RicochetPage>
                     animation: _engine.hud,
                     builder: (context, _) => _engine.mode == GameMode.over
                         ? GameResultOverlay(
+                            primaryFocusNode: _overlayFocus,
                             title: l10n.ricochetGameOver,
                             headline: '${_engine.score}',
                             headlineColor: RicochetColors.bonus,

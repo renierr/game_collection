@@ -389,7 +389,7 @@ class RicochetEngine {
         14,
       );
       _burst(pickup.x, pickup.y, RicochetColors.pickup, 10);
-      GameAudio.instance.play(RicochetSfx.plus, minGapMs: 70);
+      GameAudio.instance.play(RicochetSfx.plus, minGapMs: 40);
       _markHudDirty();
     }
   }
@@ -608,8 +608,9 @@ class RicochetEngine {
     if (brick.hp <= 0 || brick.type == TileType.bomb) {
       _destroy(brick);
     } else {
-      // One volley can land dozens of ticks in a single frame; they read as one
-      // sound anyway, and spending a voice on each one silences everything else.
+      // Gap matches the clip length so two ticks never overlap: voices sum
+      // in the mixer, so a stacked volley would swell in volume purely
+      // with ball count. One at a time still reads as continuous.
       GameAudio.instance.play(
         RicochetSfx.hit,
         minGapMs: 45,
@@ -669,7 +670,7 @@ class RicochetEngine {
       case TileType.rampA:
       case TileType.rampB:
       case TileType.orb:
-        GameAudio.instance.play(RicochetSfx.breakTile, minGapMs: 35);
+        GameAudio.instance.play(RicochetSfx.breakTile, minGapMs: 70);
         shake = math.min(shake + 2, 6);
     }
     _markHudDirty();
@@ -684,7 +685,7 @@ class RicochetEngine {
 
   void _armToast(String message, Color color) {
     _addText(Board.width / 2, RicochetTuning.toastY, message, color, 1.2, 15);
-    GameAudio.instance.play(RicochetSfx.arm, important: true);
+    GameAudio.instance.play(RicochetSfx.arm);
   }
 
   /// Everything within ~2 cells takes [damage]. Lethal by default, which is
@@ -694,7 +695,7 @@ class RicochetEngine {
       Ring(x: x, y: y, radius: Board.cell * 0.5, maxRadius: Board.cell * 2.1),
     );
     _burst(x, y, RicochetColors.blastLight, 26);
-    GameAudio.instance.play(RicochetSfx.boom, minGapMs: 60, important: true);
+    GameAudio.instance.play(RicochetSfx.boom, minGapMs: 40);
     shake = math.max(shake, 10);
 
     final radius = RicochetTuning.explosionRadius;
@@ -750,7 +751,7 @@ class RicochetEngine {
           1,
           16,
         );
-        GameAudio.instance.play(RicochetSfx.plus, important: true);
+        GameAudio.instance.play(RicochetSfx.plus);
       case PowerUp.pierce:
         pierceCharges++;
         _armToast(strings.pierceArmed, RicochetColors.pierceLight);
@@ -781,7 +782,7 @@ class RicochetEngine {
     speedMultiplier = 1;
     _autoSped = false;
     mode = GameMode.shooting;
-    GameAudio.instance.play(RicochetSfx.launch, important: true);
+    GameAudio.instance.play(RicochetSfx.launch);
     _markHudDirty();
   }
 
@@ -824,7 +825,7 @@ class RicochetEngine {
       1,
       17,
     );
-    GameAudio.instance.play(RicochetSfx.arm, important: true);
+    GameAudio.instance.play(RicochetSfx.arm);
     _markHudDirty();
   }
 
@@ -864,7 +865,7 @@ class RicochetEngine {
       );
       _showBanner(level + 1);
       totalBalls = math.min(totalBalls + 2, RicochetTuning.volleyCap);
-      GameAudio.instance.play(RicochetSfx.levelClear, important: true);
+      GameAudio.instance.play(RicochetSfx.levelClear);
       _betweenTimer = 1.1;
       mode = GameMode.between;
     } else {
@@ -876,7 +877,7 @@ class RicochetEngine {
   void _gameOver() {
     mode = GameMode.over;
     _recordBest();
-    GameAudio.instance.play(RicochetSfx.gameOver, important: true);
+    GameAudio.instance.play(RicochetSfx.gameOver);
     // The in-progress save is replaced by the level's checkpoint, so *Retry
     // Level* has a board to restore and a resumed app never lands on a dead run.
     final checkpoint = _checkpoint;
@@ -902,7 +903,7 @@ class RicochetEngine {
     }
     _showBanner(level);
     mode = GameMode.aiming;
-    GameAudio.instance.play(RicochetSfx.arm, important: true);
+    GameAudio.instance.play(RicochetSfx.arm);
     _markHudDirty();
   }
 

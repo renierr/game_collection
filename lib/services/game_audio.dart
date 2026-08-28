@@ -13,29 +13,20 @@ import '../helpers/debug_log.dart';
 /// without PulseAudio — must leave the game fully playable and silent rather
 /// than throwing on the first brick.
 ///
-/// SoLoud defaults to 16 concurrent voices and *silently* drops a `play()` once
-/// they are gone — it reports `maxActiveVoiceCountReached` and returns a handle
-/// that addresses no voice, without throwing. The refusal is not even-handed
-/// either: a clip that already has a voice steals its own oldest one and is
-/// always heard, while a clip with none is simply refused. A game that fires a
-/// tick per collision therefore loses precisely the rare sounds that carry
-/// information — the launch, the level clear — while the ticks play on.
-///
-/// [_voiceCeiling] raises that budget far past anything a board can ask for,
-/// which is the actual cure. The rationing in [play] stays for its own sake —
-/// forty identical ticks in one frame is one sound to the ear and a pile of
-/// wasted mixing — and the eviction path is kept as a backstop.
+/// SoLoud drops a play once its voice budget is gone, returning a handle that
+/// addresses nothing rather than throwing. [_voiceCeiling] lifts that budget
+/// past anything a board asks for.
 class GameAudio {
   GameAudio._();
 
   static final GameAudio instance = GameAudio._();
 
-  /// Ambient plays allowed inside [_windowMs], and voices they may hold at
-  /// once. Both stay well under SoLoud's own budget so an [important] clip
-  /// finds room without having to evict anything.
-  static const int _ambientBudget = 5;
-  static const int _windowMs = 120;
-  static const int _ambientVoiceCap = 8;
+  /// Frames per mix. SoLoud's default 2048 is ~46ms at 44.1kHz — longer than a
+  /// 45ms impact tick, so every clip fired inside one window starts at the same
+  /// sample offset. Near-identical ticks clumped like that merge into one sound
+  /// to the ear, and a clip fired on a keypress waits up to a full buffer to be
+  /// heard. 512 frames is ~12ms: short enough that neither shows.
+  static const int _bufferFrames = 512;
 
   /// Concurrent voices asked of SoLoud, well above what any board generates.
   /// The engine's own hard maximum is 1023.
@@ -43,13 +34,9 @@ class GameAudio {
 
   final Map<String, AudioSource> _clips = {};
 
-  /// Last play time per throttle group, the timestamps of the ambient plays
-  /// still inside the rolling window, and the voices those plays hold, oldest
-  /// first.
+  /// Last play time per throttle group.
   final Map<String, int> _lastPlayMs = {};
-  final List<int> _recentAmbient = [];
-  final List<SoundHandle> _ambientVoices = [];
-  int _lastRefusalLogMs = 0;
+
   Future<void>? _initFuture;
   bool _available = false;
   double _masterVolume = 0.7;
@@ -64,17 +51,25 @@ class GameAudio {
 
   Future<void> _init() async {
     try {
-      if (!SoLoud.instance.isInitialized) await SoLoud.instance.init();
-      // The default 16 is nowhere near a board that can land a dozen impacts in
-      // one frame, and overflowing it drops sounds silently. Above the ceiling
-      // SoLoud keeps the loudest voices rather than refusing new ones, so the
-      // failure mode past this is graceful instead of arbitrary.
-      SoLoud.instance.setMaxActiveVoiceCount(_voiceCeiling);
+      if (!SoLoud.instance.isInitialized) {
+        await SoLoud.instance.init(bufferSize: _bufferFrames);
+      }
+      _raiseVoiceCeiling();
       _available = true;
     } catch (e) {
       errorLog('[GameAudio] Audio unavailable, running silent: $e');
       _available = false;
     }
+  }
+
+  /// The default 16 is nowhere near a board that can land a dozen impacts in
+  /// one frame, and overflowing it drops sounds silently. Above the ceiling
+  /// SoLoud keeps the loudest voices rather than refusing new ones, so the
+  /// failure mode past this is graceful instead of arbitrary.
+  void _raiseVoiceCeiling() {
+    try {
+      SoLoud.instance.setMaxActiveVoiceCount(_voiceCeiling);
+    } catch (_) {}
   }
 
   /// Volume every clip is scaled by, 0..1. Games pass `AppState.effectiveVolume`
@@ -104,118 +99,44 @@ class GameAudio {
       await register(entry.key, entry.value);
     }
     // Re-assert the ceiling per game: an engine that reinitialized underneath
-    // us — an audio device change, an interruption — comes back at SoLoud's
-    // default of 16.
-    if (_available) {
-      try {
-        SoLoud.instance.setMaxActiveVoiceCount(_voiceCeiling);
-      } catch (_) {}
-    }
+    // us — an audio device change, an interruption — comes back at the default.
+    if (_available) _raiseVoiceCeiling();
   }
 
-  /// Fires a registered clip. Unknown keys and playback failures are silent —
-  /// a missing sound must never interrupt a volley.
+  /// Fires a registered clip.
   ///
-  /// [minGapMs] is the shortest gap between two plays of the same [group]
-  /// (the key itself by default): a hit tick that fires forty times in one
-  /// frame is one sound to the ear, so collapsing it costs nothing and keeps
-  /// voices free. Set [important] on the clips a player is waiting for — a
-  /// level clear, a game over — so they are never rationed away.
+  /// [minGapMs] is the shortest gap between two plays of the same [group] (the
+  /// key itself by default). It exists for the clips a collision fires: at one
+  /// per frame they still sound continuous, and forty in a frame is one sound
+  /// to the ear and thirty-nine voices of wasted mixing. It is the *only*
+  /// rationing here — anything cleverer is a place for a sound to go missing
+  /// for reasons the player cannot hear.
   void play(
     String key, {
     double volume = 1.0,
     int minGapMs = 0,
     String? group,
-    bool important = false,
   }) {
     if (!_available || _masterVolume <= 0) return;
     final source = _clips[key];
     if (source == null) return;
 
-    final now = DateTime.now().millisecondsSinceEpoch;
     if (minGapMs > 0) {
       final bucket = group ?? key;
+      final now = DateTime.now().millisecondsSinceEpoch;
       final last = _lastPlayMs[bucket];
       if (last != null && now - last < minGapMs) return;
       _lastPlayMs[bucket] = now;
     }
 
-    if (important) {
-      if (_startVoice(source, key, volume) != null) return;
-      // Refused for want of a voice. The ticks are the cheapest thing playing
-      // and none of them is missed, so end them and ask once more.
-      _stopAmbientVoices();
-      if (_startVoice(source, key, volume) == null) _reportRefusal(key, now);
-      return;
-    }
-
-    _recentAmbient.removeWhere((at) => now - at > _windowMs);
-    if (_recentAmbient.length >= _ambientBudget) return;
-    _pruneAmbientVoices();
-    if (_ambientVoices.length >= _ambientVoiceCap) {
-      _stopVoice(_ambientVoices.removeAt(0));
-    }
-    final handle = _startVoice(source, key, volume);
-    if (handle == null) return;
-    _recentAmbient.add(now);
-    _ambientVoices.add(handle);
-  }
-
-  /// Starts one voice, or returns null when SoLoud would not. A full budget is
-  /// not an exception there — it hands back a handle that addresses nothing —
-  /// so the zero check is the only way to know the sound never played.
-  SoundHandle? _startVoice(AudioSource source, String key, double volume) {
     try {
-      final handle = SoLoud.instance.play(
+      SoLoud.instance.play(
         source,
         volume: (volume * _masterVolume).clamp(0.0, 1.0),
       );
-      return handle.id == 0 ? null : handle;
     } catch (e) {
       debugLog('[GameAudio] play("$key") failed: $e');
-      return null;
     }
-  }
-
-  /// A refused [important] clip is the one audio fault a player actually
-  /// notices, and it leaves no trace of its own — so say so, with the numbers
-  /// that identify the cause, at most once a second.
-  void _reportRefusal(String key, int now) {
-    if (now - _lastRefusalLogMs < 1000) return;
-    _lastRefusalLogMs = now;
-    var active = -1;
-    try {
-      active = SoLoud.instance.getActiveVoiceCount();
-    } catch (_) {}
-    errorLog(
-      '[GameAudio] no voice for "$key" '
-      '(active $active of $_voiceCeiling, ambient ${_ambientVoices.length})',
-    );
-  }
-
-  void _pruneAmbientVoices() {
-    _ambientVoices.removeWhere((handle) {
-      try {
-        return !SoLoud.instance.getIsValidVoiceHandle(handle);
-      } catch (_) {
-        return true;
-      }
-    });
-  }
-
-  void _stopAmbientVoices() {
-    for (final handle in _ambientVoices) {
-      _stopVoice(handle);
-    }
-    _ambientVoices.clear();
-  }
-
-  /// The native stop takes effect before the returned future completes, so a
-  /// voice freed here is available to the very next [_startVoice].
-  void _stopVoice(SoundHandle handle) {
-    try {
-      unawaited(SoLoud.instance.stop(handle).catchError((_) {}));
-    } catch (_) {}
   }
 
   /// Releases every registered clip. Called when a game page is disposed; the
@@ -228,7 +149,5 @@ class GameAudio {
     }
     _clips.clear();
     _lastPlayMs.clear();
-    _recentAmbient.clear();
-    _ambientVoices.clear();
   }
 }
