@@ -9,6 +9,16 @@ class RicochetColors {
   RicochetColors._();
 
   static const Color board = Color(0xFF10121C);
+
+  /// The surround behind the board. Darker than [board] so the playfield reads
+  /// as a distinct area rather than bleeding into the page.
+  static const Color page = Color(0xFF06070C);
+
+  /// The walls a ball bounces off. Without an explicit rim the board's edges
+  /// are invisible against the surround, and the player cannot see where a
+  /// shot will come back from.
+  static const Color wall = Color(0xFF3E4A66);
+
   static const Color launcher = Color(0xFF38BDF8);
   static const Color ball = Color(0xFFF8FAFC);
   static const Color ballTrail = Color(0xFF7DD3FC);

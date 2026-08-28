@@ -53,8 +53,37 @@ class RicochetBoardPainter extends CustomPainter {
     _paintTexts(canvas);
     _paintHint(canvas);
     _paintBanner(canvas);
+    // Last, so a ball or a particle never paints over the wall it just hit.
+    _paintWalls(canvas);
 
     canvas.restore();
+  }
+
+  /// The three walls a ball bounces off, plus the open floor it returns
+  /// through. Drawn as an explicit rim because the board is the same near-black
+  /// as the page around it — without this the player cannot see where a shot
+  /// will come back from.
+  void _paintWalls(Canvas canvas) {
+    final rim = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..color = RicochetColors.wall;
+    // Inset by half the stroke so the whole line stays inside the clip.
+    final outer = _bounds.deflate(1);
+    canvas.drawLine(outer.topLeft, outer.topRight, rim);
+    canvas.drawLine(outer.topLeft, outer.bottomLeft, rim);
+    canvas.drawLine(outer.topRight, outer.bottomRight, rim);
+
+    // A faint second line inside the rim reads as a surface with depth rather
+    // than a border drawn around a picture.
+    final inner = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = RicochetColors.wall.withValues(alpha: 0.3);
+    final gap = _bounds.deflate(4.5);
+    canvas.drawLine(gap.topLeft, gap.topRight, inner);
+    canvas.drawLine(gap.topLeft, gap.bottomLeft, inner);
+    canvas.drawLine(gap.topRight, gap.bottomRight, inner);
   }
 
   void _paintDangerZone(Canvas canvas) {

@@ -174,6 +174,37 @@ void main() {
     expect(find.text('11'), findsOneWidget);
   });
 
+  testWidgets('the game page fits every phone size', (tester) async {
+    // Four readouts beside four buttons above a board is the tightest row in
+    // the app; a debug overflow here is a thrown FlutterError, so a clean
+    // takeException is the assertion.
+    const sizes = [
+      Size(320, 568), // smallest phone still in circulation
+      Size(360, 640),
+      Size(411, 731),
+      Size(422, 720), // the width that first overflowed
+      Size(640, 360), // landscape phone: the HUD moves beside the board
+      Size(800, 600),
+    ];
+    addTearDown(tester.view.reset);
+
+    for (final size in sizes) {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      // Pumping an empty tree first tears down the previous app, so each size
+      // starts a fresh router back on the overview.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await pumpApp(tester);
+      await openRicochet(tester);
+      await pumpFrames(tester, 30);
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'game page does not fit ${size.width}x${size.height}',
+      );
+    }
+  });
+
   test('the route is derived from the game id', () {
     expect(RicochetGame.config.route, '/${RicochetGame.config.id}');
   });

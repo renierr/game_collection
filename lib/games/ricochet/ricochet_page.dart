@@ -174,7 +174,7 @@ class _RicochetPageState extends State<RicochetPage>
 
     return GameLayout(
       title: l10n.gameNameRicochet,
-      backgroundColor: RicochetColors.board,
+      backgroundColor: RicochetColors.page,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final hud = RicochetHud(
