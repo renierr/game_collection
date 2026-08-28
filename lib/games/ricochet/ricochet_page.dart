@@ -85,6 +85,7 @@ class _RicochetPageState extends State<RicochetPage>
     onDispose(_stopBackgroundTicker);
     onDispose(_releaseWakeLock);
     onDispose(_engine.dispose);
+    onDispose(GameAudio.instance.stopLoop);
     onDispose(() => unawaited(GameAudio.instance.releaseAll()));
     unawaited(_bootstrap());
   }
@@ -107,6 +108,7 @@ class _RicochetPageState extends State<RicochetPage>
     await RicochetSfx.load();
     await _engine.start();
     if (!mounted) return;
+    GameAudio.instance.playLoop(RicochetSfx.bgm, volume: 0.10);
     _lastTick = Duration.zero;
     _ticker.start();
   }
@@ -137,9 +139,12 @@ class _RicochetPageState extends State<RicochetPage>
     chargeChip: (label, count) => count > 1 ? '$label ×$count' : label,
   );
 
+  // ------------------------------------------------------------- frame driver
+
   void _onTick(Duration elapsed) {
+    if (!mounted) return;
     final dt = _lastTick == Duration.zero
-        ? 1 / 60
+        ? 0.0
         : (elapsed - _lastTick).inMicroseconds / 1e6;
     _lastTick = elapsed;
     _steerAim(dt);
@@ -156,7 +161,10 @@ class _RicochetPageState extends State<RicochetPage>
       _stopBackgroundTicker();
       _lastTick = Duration.zero;
       if (!_ticker.isActive) _ticker.start();
+      GameAudio.instance.playLoop(RicochetSfx.bgm, volume: 0.10);
     } else {
+      GameAudio.instance.stopLoop();
+      _releaseWakeLock();
       unawaited(_engine.saveNow());
       if (_engine.turnInProgress) _startBackgroundTicker();
     }

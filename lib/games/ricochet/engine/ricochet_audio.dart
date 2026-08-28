@@ -23,6 +23,7 @@ class RicochetSfx {
   static const String launch = 'ric_launch';
   static const String levelClear = 'ric_clear';
   static const String gameOver = 'ric_over';
+  static const String bgm = 'ric_bgm';
 
   static final math.Random _random = math.Random();
 
@@ -136,23 +137,27 @@ class RicochetSfx {
         ],
         gapSeconds: 0.06,
       ),
-      launch: WavBuilder.mix([
-        WavBuilder.tone(
-          frequency: 340,
-          seconds: 0.09,
-          waveform: Waveform.triangle,
-          gain: 0.42,
-          slideHz: 220,
-        ),
-        // A breath of air behind the chirp, so firing reads as a release.
-        WavBuilder.noise(
-          seconds: 0.07,
-          gain: 0.10,
-          decay: 11,
-          highPassHz: 1400,
-          seed: 0x1a,
-        ),
-      ]),
+      launch: WavBuilder.sequence(
+        notes: const [
+          // Spring pull / trigger charge (wakes hardware DAC)
+          ToneSpec(
+            frequency: 240,
+            seconds: 0.08,
+            waveform: Waveform.triangle,
+            gain: 0.35,
+            slideHz: 120,
+          ),
+          // High-energy arcade release chirp
+          ToneSpec(
+            frequency: 520,
+            seconds: 0.12,
+            waveform: Waveform.square,
+            gain: 0.28,
+            slideHz: 260,
+          ),
+        ],
+        gapSeconds: 0.02,
+      ),
       levelClear: WavBuilder.sequence(
         notes: const [
           ToneSpec(
@@ -210,6 +215,14 @@ class RicochetSfx {
           ),
         ],
         gapSeconds: 0.16,
+      ),
+      bgm: WavBuilder.noise(
+        seconds: 4.0,
+        gain: 0.14,
+        decay: 0,
+        lowPassHz: 180,
+        highPassHz: 40,
+        seed: 0x5eed,
       ),
     };
   }

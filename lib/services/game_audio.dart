@@ -26,7 +26,7 @@ class GameAudio {
   /// sample offset. Near-identical ticks clumped like that merge into one sound
   /// to the ear, and a clip fired on a keypress waits up to a full buffer to be
   /// heard. 512 frames is ~12ms: short enough that neither shows.
-  static const int _bufferFrames = 512;
+  static const int _bufferFrames = 2048;
 
   /// Concurrent voices asked of SoLoud, well above what any board generates.
   /// The engine's own hard maximum is 1023.
@@ -52,7 +52,10 @@ class GameAudio {
   Future<void> _init() async {
     try {
       if (!SoLoud.instance.isInitialized) {
-        await SoLoud.instance.init(bufferSize: _bufferFrames);
+        await SoLoud.instance.init(
+          bufferSize: _bufferFrames,
+          lowLatency: false,
+        );
       }
       _raiseVoiceCeiling();
       _available = true;
@@ -72,22 +75,38 @@ class GameAudio {
     } catch (_) {}
   }
 
+  String? _currentLoopKey;
+  double _currentLoopVolume = 0.10;
+  SoundHandle? _loopHandle;
+
   /// Volume every clip is scaled by, 0..1. Games pass `AppState.effectiveVolume`
   /// so the settings mute switch and slider both land here.
   void setMasterVolume(double volume) {
     _masterVolume = volume.clamp(0.0, 1.0);
+    if (_loopHandle != null) {
+      if (_masterVolume <= 0) {
+        try {
+          SoLoud.instance.stop(_loopHandle!);
+        } catch (_) {}
+        _loopHandle = null;
+      } else {
+        try {
+          SoLoud.instance.setVolume(
+            _loopHandle!,
+            (_currentLoopVolume * _masterVolume).clamp(0.0, 1.0),
+          );
+        } catch (_) {}
+      }
+    } else if (_masterVolume > 0 && _currentLoopKey != null) {
+      playLoop(_currentLoopKey!, volume: _currentLoopVolume);
+    }
   }
 
-  /// Loads one clip under [key], replacing any clip already registered there.
-  /// [wav] is raw WAV bytes, normally from `WavBuilder`.
+  /// Loads one clip under [key], reusing cached [AudioSource] if already loaded.
   Future<void> register(String key, Uint8List wav) async {
     await init();
-    if (!_available) return;
+    if (!_available || _clips.containsKey(key)) return;
     try {
-      final existing = _clips.remove(key);
-      if (existing != null) SoLoud.instance.disposeSource(existing);
-      // SoLoud hashes sounds by name, so a stable per-key name lets a re-register
-      // replace the clip instead of colliding with the old one.
       _clips[key] = await SoLoud.instance.loadMem('ga_$key.wav', wav);
     } catch (e) {
       errorLog('[GameAudio] Failed to register clip "$key": $e');
@@ -98,19 +117,10 @@ class GameAudio {
     for (final entry in clips.entries) {
       await register(entry.key, entry.value);
     }
-    // Re-assert the ceiling per game: an engine that reinitialized underneath
-    // us — an audio device change, an interruption — comes back at the default.
     if (_available) _raiseVoiceCeiling();
   }
 
   /// Fires a registered clip.
-  ///
-  /// [minGapMs] is the shortest gap between two plays of the same [group] (the
-  /// key itself by default). It exists for the clips a collision fires: at one
-  /// per frame they still sound continuous, and forty in a frame is one sound
-  /// to the ear and thirty-nine voices of wasted mixing. It is the *only*
-  /// rationing here — anything cleverer is a place for a sound to go missing
-  /// for reasons the player cannot hear.
   void play(
     String key, {
     double volume = 1.0,
@@ -121,8 +131,9 @@ class GameAudio {
     final source = _clips[key];
     if (source == null) return;
 
+    final bucket = group ?? key;
+
     if (minGapMs > 0) {
-      final bucket = group ?? key;
       final now = DateTime.now().millisecondsSinceEpoch;
       final last = _lastPlayMs[bucket];
       if (last != null && now - last < minGapMs) return;
@@ -139,9 +150,44 @@ class GameAudio {
     }
   }
 
-  /// Releases every registered clip. Called when a game page is disposed; the
-  /// SoLoud engine itself stays up for the next game.
+  /// Starts a continuous looping background track scaled by master volume.
+  void playLoop(String key, {double volume = 0.10}) {
+    _currentLoopKey = key;
+    _currentLoopVolume = volume;
+    if (!_available || _masterVolume <= 0) return;
+    final source = _clips[key];
+    if (source == null) return;
+    try {
+      if (_loopHandle != null) {
+        SoLoud.instance.stop(_loopHandle!);
+      }
+      _loopHandle = SoLoud.instance.play(
+        source,
+        volume: (volume * _masterVolume).clamp(0.0, 1.0),
+        looping: true,
+      );
+    } catch (_) {}
+  }
+
+  /// Stops the active background loop.
+  void stopLoop() {
+    _currentLoopKey = null;
+    if (_loopHandle != null) {
+      try {
+        SoLoud.instance.stop(_loopHandle!);
+      } catch (_) {}
+      _loopHandle = null;
+    }
+  }
+
+  /// Clears throttle timestamps. Clip sources are kept in memory for instant reuse.
   Future<void> releaseAll() async {
+    _lastPlayMs.clear();
+  }
+
+  /// Fully releases audio resources when needed.
+  Future<void> disposeAll() async {
+    stopLoop();
     for (final source in _clips.values) {
       try {
         SoLoud.instance.disposeSource(source);

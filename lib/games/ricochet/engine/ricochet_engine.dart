@@ -113,7 +113,7 @@ class RicochetEngine {
 
   int _uidSeq = 1;
 
-  GameMode mode = GameMode.aiming;
+  GameMode mode = GameMode.between;
   int level = 1;
   int score = 0;
   int best = 0;
@@ -204,6 +204,7 @@ class RicochetEngine {
       _generateLevel(1);
       _showBanner(1);
     }
+    mode = GameMode.aiming;
     _markHudDirty();
   }
 
